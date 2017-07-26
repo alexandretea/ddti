@@ -1,17 +1,17 @@
 // C/C++ File
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
-// File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/Process.cpp
+// File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/CommProcess.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:02:13
-// Modified: 2017-07-26 18:26:28
+// Modified: 2017-07-26 18:59:07
 
-#include "MpiProcess.hpp"
+#include "MpiCommProcess.hpp"
 
 namespace utils {
 namespace mpi {
 
-Process::Process(MPI_Comm const& communicator)
+CommProcess::CommProcess(MPI_Comm const& communicator)
 {
 	char	processor_name[MPI_MAX_PROCESSOR_NAME];
 	int		name_len;
@@ -23,31 +23,31 @@ Process::Process(MPI_Comm const& communicator)
     _name = std::string(processor_name, name_len);
 }
 
-Process::~Process()
+CommProcess::~CommProcess()
 {
     MPI_Finalize();
 }
 
 int
-Process::get_rank() const
+CommProcess::get_rank() const
 {
     return _rank;
 }
 
 int
-Process::get_comm_size() const
+CommProcess::get_comm_size() const
 {
     return _comm_size;
 }
 
 std::string const&
-Process::get_name() const
+CommProcess::get_name() const
 {
     return _name;
 }
 
 std::ostream&
-operator<<(std::ostream& s, Process const& o)
+operator<<(std::ostream& s, CommProcess const& o)
 {
     s << o.get_name() << "["
         << o.get_rank() << "/"

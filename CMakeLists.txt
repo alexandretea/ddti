@@ -17,6 +17,8 @@ endif (MPI_FOUND)
 
 include_directories(
     srcs/
+    srcs/master
+    srcs/slave
     srcs/exceptions
 )
 
@@ -29,6 +31,8 @@ set(LIBS
 file(GLOB sources
 	srcs/*.cpp
     srcs/utils/*.cpp
+	srcs/master/*.cpp
+	srcs/slave/*.cpp
 	srcs/exceptions/*.cpp
 )
 set(SOURCES ${sources})

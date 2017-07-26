@@ -1,10 +1,10 @@
 // C/C++ File
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
-// File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiProcess.hpp
+// File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiCommProcess.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 17:51:48
-// Modified: 2017-07-26 18:26:39
+// Modified: 2017-07-26 18:59:32
 
 #ifndef MPIPROCESS_H
 #define MPIPROCESS_H
@@ -16,14 +16,15 @@
 namespace utils {
 namespace mpi {
 
-class Process
+class CommProcess
 {
     public:
-        Process(MPI_Comm const& communicator = MPI_COMM_WORLD);
-        ~Process();
+        CommProcess(MPI_Comm const& communicator = MPI_COMM_WORLD);
+        ~CommProcess();
 
-        Process(Process const& other) = delete;
-        Process&    operator=(Process const& other) = delete;
+        CommProcess(CommProcess const& other) = delete;
+        CommProcess&        operator=(CommProcess const& other) = delete;
+        // TODO implement copy ctr and assign op?
 
     public:
         int                 get_rank() const;
@@ -37,7 +38,7 @@ class Process
 };
 
 std::ostream&
-operator<<(std::ostream& s, Process const& other);
+operator<<(std::ostream& s, CommProcess const& other);
 
 }
 }
