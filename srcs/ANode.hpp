@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DdtiANode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:53:59
-// Modified: 2017-07-26 19:33:00
+// Modified: 2017-07-28 15:32:55
 
 #ifndef DDTIANODE_H
 #define DDTIANODE_H
@@ -27,10 +27,11 @@ class ANode
 
     public:
         virtual void    run() = 0;
-        int             get_id() const;
+        size_t          get_id() const;
+        size_t          get_nb_slaves() const;
 
     protected:
-        utils::mpi::CommProcess const&  _process;
+        utils::mpi::CommProcess const&  _comm_process;
 };
 
 } // end namespace ddti
