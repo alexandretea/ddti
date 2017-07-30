@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-07-28 16:45:03
+// Modified: 2017-07-29 17:33:18
 
 #include "InductionC4_5.hpp"
 
@@ -21,7 +21,9 @@ C4_5::~C4_5()
 }
 
 DecisionTree
-C4_5::operator()(arma::mat const& data)
+C4_5::operator()(arma::mat const& data,
+                 mlpack::data::DatasetInfo const& data_info,
+                 size_t labels_dim)
 {
     size_t          chunk_size;
 

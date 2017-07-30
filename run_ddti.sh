@@ -1,1 +1,1 @@
-mpirun -n 4 $1 -v --infile ../datasets/careval.csv
+mpirun -n 4 $1 -v --training_set ../datasets/careval.csv

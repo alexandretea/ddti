@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/SlaveNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-07-26 19:35:06
+// Modified: 2017-07-29 18:21:04
 
 #ifndef SLAVENODE_H
 #define SLAVENODE_H
@@ -26,9 +26,6 @@ class SlaveNode : public ANode
     public:
         virtual void    run();
 };
-
-std::ostream&
-operator<<(std::ostream& s, SlaveNode const& other);
 
 }
 
