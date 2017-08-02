@@ -4,13 +4,13 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DdtiANode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:53:59
-// Modified: 2017-07-30 15:49:13
+// Modified: 2017-08-02 17:54:19
 
 #ifndef DDTIANODE_H
 #define DDTIANODE_H
 
 #include <mlpack/core.hpp>
-#include "utils/MpiCommProcess.hpp"
+#include "mpi/MpiCommunicator.hpp"
 
 namespace ddti {
 
@@ -18,7 +18,7 @@ class ANode
 {
     // ANode is abstract and can only be instanciated through its child classes
     protected:
-        ANode(utils::mpi::CommProcess const& process);
+        ANode(utils::mpi::Communicator const& comm);
 
     public:
         virtual ~ANode();
@@ -28,14 +28,14 @@ class ANode
 
     public:
         virtual void        run() = 0;
-        size_t              get_id() const;
-        size_t              get_nb_slaves() const;
+        size_t              id() const;
+        size_t              nb_slaves() const;
         bool                is_master() const;
         bool                is_slave() const;
-        std::string const&  get_name() const;
+        std::string const&  name() const;
 
     protected:
-        utils::mpi::CommProcess const&  _comm_process;
+        utils::mpi::Communicator const& _communicator;
         std::string                     _name;
 };
 

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-07-29 17:33:05
+// Modified: 2017-08-02 15:42:55
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -20,7 +20,7 @@ namespace induction {
 class C4_5
 {
     public:
-        C4_5(size_t nb_slaves, utils::mpi::CommProcess const& comm_process);
+        C4_5(size_t nb_slaves, utils::mpi::Communicator const& comm_process);
         virtual ~C4_5();
 
         C4_5(C4_5 const& other) = delete;
@@ -40,7 +40,7 @@ class C4_5
 
     protected:
         size_t                          _nb_slaves;
-        utils::mpi::CommProcess const&  _comm_process;
+        utils::mpi::Communicator const& _communicator;
         DecisionTree                    _dt_root;
 };
 

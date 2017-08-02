@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-07-30 17:27:08
+// Modified: 2017-08-02 15:47:55
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -22,7 +22,7 @@ template <typename InductionAlgo>
 class MasterNode : public ANode
 {
     public:
-        MasterNode(utils::mpi::CommProcess const& process,
+        MasterNode(utils::mpi::Communicator const& process,
                    std::string const& training_set, int labels_dim,
                    std::string const& test_set = "")
             : ANode(process), _training_set(training_set),
@@ -41,8 +41,8 @@ class MasterNode : public ANode
         {
             ddti::Logger << "Running";
             try {
-                InductionAlgo   induction_algorithm(get_nb_slaves(),
-                                                    _comm_process);
+                InductionAlgo   induction_algorithm(nb_slaves(),
+                                                    _communicator);
                 DecisionTree    dt_root;
 
                 mlpack::data::Load(_training_set, _data, _data_info, true);

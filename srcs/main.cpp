@@ -4,11 +4,11 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/main_load.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-25 11:11:44
-// Modified: 2017-07-30 17:45:48
+// Modified: 2017-08-02 17:55:57
 
 #include <iostream>
 #include <mlpack/core.hpp>
-#include <utils/MpiCommProcess.hpp>
+#include "MpiCommunicator.hpp"
 #include "MasterNode.hpp"
 #include "InductionC4_5.hpp"
 #include "SlaveNode.hpp"
@@ -30,15 +30,15 @@ PARAM_INT_IN(PARAM_LABELS_DIMENSION,
              "use the last column of the dataset.", "l", -1);
 
 static bool
-is_master(utils::mpi::CommProcess const& p)
+is_master(utils::mpi::Communicator const& p)
 {
-    return p.get_rank() == 0;
+    return p.rank() == 0;
 }
 
 int
 main(int ac, char** av)
 {
-    utils::mpi::CommProcess process;
+    utils::mpi::Communicator process;
 
     try {
         mlpack::CLI::ParseCommandLine(ac, av);
@@ -53,14 +53,14 @@ main(int ac, char** av)
                     mlpack::CLI::GetParam<std::string>(PARAM_TEST_SET)
             );
 
-            ddti::Logger.set_id(master.get_name());
+            ddti::Logger.set_id(master.name());
             master.run();
 
         // Slave node
         } else {
-            ddti::SlaveNode     slave(process);
+            ddti::SlaveNode<int>     slave(process);
 
-            ddti::Logger.set_id(slave.get_name());
+            ddti::Logger.set_id(slave.name());
             slave.run();
         }
 

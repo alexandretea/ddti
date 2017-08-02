@@ -20,6 +20,8 @@ include_directories(
     srcs/master
     srcs/slave
     srcs/exceptions
+    srcs/utils
+    srcs/utils/mpi
 )
 
 set(LIBS
@@ -30,9 +32,10 @@ set(LIBS
 
 file(GLOB sources
 	srcs/*.cpp
-    srcs/utils/*.cpp
 	srcs/master/*.cpp
 	srcs/slave/*.cpp
+    srcs/utils/*.cpp
+	srcs/utils/mpi/*.cpp
 	srcs/exceptions/*.cpp
 )
 set(SOURCES ${sources})
