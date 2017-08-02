@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiCommunicator.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 17:51:48
-// Modified: 2017-08-02 17:53:56
+// Modified: 2017-08-02 18:41:39
 
 #ifndef MPIPROCESS_H
 #define MPIPROCESS_H
@@ -46,14 +46,21 @@ class Communicator
         {
             T   data;
 
-            recv(&data, get_datatype<T>(), 1, source, tag, status);
+            recv(&data, 1, source, tag, status);
             return data;
         }
 
         template <typename T>
         void
         broadcast(T& data, int root) const
-        { broadcast(&data, get_datatype<T>(), 1, root); }
+        { broadcast(&data, 1, root); }
+
+        template <typename T>
+        void
+        broadcast_send(T data, int root) const
+        { broadcast(&data, 1, root); }
+        // to handle sending of const values as MPI_Bcast() takes a non-const v
+        // TODO find better solution
 
         // communication functions for multiple entries
         template <typename T>

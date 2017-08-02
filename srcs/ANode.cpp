@@ -4,13 +4,17 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DdtiANode.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 19:00:51
-// Modified: 2017-08-02 15:58:11
+// Modified: 2017-08-02 18:09:05
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "ANode.hpp"
 #include "utils/datetime.hpp"
 
 namespace ddti {
+
+// NOTE: if shadowing masters in future improvements, this will have to be
+// changed
+const int    ANode::MasterRank = 0;
 
 ANode::ANode(utils::mpi::Communicator const& comm)
     : _communicator(comm), _name()
@@ -43,7 +47,9 @@ ANode::nb_slaves() const
 bool
 ANode::is_master() const
 {
-    return id() == 0;
+    // NOTE: if shadowing masters in future improvements, this will have to be
+    // changed
+    return id() == MasterRank;
 }
 
 bool

@@ -4,13 +4,14 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/main_load.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-25 11:11:44
-// Modified: 2017-08-02 17:55:57
+// Modified: 2017-08-02 18:47:04
 
 #include <iostream>
 #include <mlpack/core.hpp>
 #include "MpiCommunicator.hpp"
 #include "MasterNode.hpp"
 #include "InductionC4_5.hpp"
+#include "TaskC4_5.hpp"
 #include "SlaveNode.hpp"
 
 PROGRAM_INFO("TODO", "TODO");   // TODO
@@ -29,25 +30,19 @@ PARAM_INT_IN(PARAM_LABELS_DIMENSION,
              "(must be between 0 and N-1). If unspecified, the algorithm will "
              "use the last column of the dataset.", "l", -1);
 
-static bool
-is_master(utils::mpi::Communicator const& p)
-{
-    return p.rank() == 0;
-}
-
 int
 main(int ac, char** av)
 {
-    utils::mpi::Communicator process;
+    utils::mpi::Communicator comm;
 
     try {
         mlpack::CLI::ParseCommandLine(ac, av);
         ddti::Logger = ddti::MlpackLogger(&mlpack::Log::Info);
 
         // Master node
-        if (is_master(process)) {
+        if (comm.rank() == ddti::ANode::MasterRank) {
             ddti::MasterNode<ddti::induction::C4_5>    master(
-                    process,
+                    comm,
                     mlpack::CLI::GetParam<std::string>(PARAM_TRAINING_SET),
                     mlpack::CLI::GetParam<int>(PARAM_LABELS_DIMENSION),
                     mlpack::CLI::GetParam<std::string>(PARAM_TEST_SET)
@@ -58,12 +53,11 @@ main(int ac, char** av)
 
         // Slave node
         } else {
-            ddti::SlaveNode<int>     slave(process);
+            ddti::SlaveNode<ddti::task::C4_5>   slave(comm);
 
             ddti::Logger.set_id(slave.name());
             slave.run();
         }
-
     } catch (std::exception const& e) {
         mlpack::Log::Fatal << "Unexpected error: " << e.what() << std::endl;
     }

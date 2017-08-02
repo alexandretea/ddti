@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-02 15:42:55
+// Modified: 2017-08-02 18:27:20
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -39,6 +39,7 @@ class C4_5
         void    compute_contingency_tables();
 
     protected:
+        bool                            _stop;
         size_t                          _nb_slaves;
         utils::mpi::Communicator const& _communicator;
         DecisionTree                    _dt_root;
