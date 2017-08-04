@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiCommunicator.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 17:51:48
-// Modified: 2017-08-02 18:41:39
+// Modified: 2017-08-05 00:23:23
 
 #ifndef MPIPROCESS_H
 #define MPIPROCESS_H
@@ -66,7 +66,7 @@ class Communicator
         template <typename T>
         void
         send(int dest, T const* buffer, int count, int tag = MPI_ANY_TAG) const
-        { send(dest, buffer, get_datatype<T>(), count, tag); }
+        { send(dest, buffer, datatype::get<T>(), count, tag); }
 
         template <typename T>
         void
@@ -74,12 +74,12 @@ class Communicator
              int source = MPI_ANY_SOURCE,
              int tag = MPI_ANY_TAG,
              MPI_Status* status = MPI_STATUS_IGNORE) const
-        { recv(buffer, get_datatype<T>(), count, source, tag, status); }
+        { recv(buffer, datatype::get<T>(), count, source, tag, status); }
 
         template <typename T>
         void
         broadcast(T* buffer, int count, int root) const
-        { broadcast(buffer, get_datatype<T>(), count, root); }
+        { broadcast(buffer, datatype::get<T>(), count, root); }
 
         // 'raw' communication functions
         // NOTE: we keep non-templated functions to handle

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-02 15:47:55
+// Modified: 2017-08-04 16:05:17
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -43,7 +43,7 @@ class MasterNode : public ANode
             try {
                 InductionAlgo   induction_algorithm(nb_slaves(),
                                                     _communicator);
-                DecisionTree    dt_root;
+                DecisionTree*   dt_root;
 
                 mlpack::data::Load(_training_set, _data, _data_info, true);
                 if (_labels_dim == -1)  // labels dimension is not set

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 17:49:15
-// Modified: 2017-07-27 18:23:14
+// Modified: 2017-08-04 14:10:49
 
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
@@ -13,10 +13,12 @@
 
 namespace ddti {
 
+// TODO better design to handle splits/leaves
 class DecisionTree
 {
     public:
         DecisionTree();
+        DecisionTree(size_t index, bool is_leaf = false);
         virtual ~DecisionTree();
 
         DecisionTree(DecisionTree const& other);
@@ -24,7 +26,9 @@ class DecisionTree
         // TODO need to keep track of subset of data
 
     protected:
-        size_t                      _split_dimension;
+        bool                        _is_leaf;
+        ssize_t                     _index;
+        // -1 if not initialised, class index if leaf else split dimension
         std::vector<DecisionTree*>  _children;
         // pointers to avoid copies when pruning
 };

@@ -4,14 +4,19 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 18:23:20
-// Modified: 2017-07-28 15:18:08
+// Modified: 2017-08-04 14:10:54
 
 #include "DecisionTree.hpp"
 
 namespace ddti {
 
 DecisionTree::DecisionTree()
-    : _split_dimension(-1), _children()
+    : _is_leaf(false), _index(-1), _children()
+{
+}
+
+DecisionTree::DecisionTree(size_t index, bool is_leaf)
+    : _is_leaf(is_leaf), _index(index), _children()
 {
 }
 
@@ -22,17 +27,18 @@ DecisionTree::~DecisionTree()
     }
 }
 
-DecisionTree::DecisionTree(DecisionTree const& other)
-    : _split_dimension(other._split_dimension), _children(other._children)
+DecisionTree::DecisionTree(DecisionTree const& o)
+    : _is_leaf(o._is_leaf), _index(o._index), _children(o._children)
 {
 }
 
 DecisionTree&
-DecisionTree::operator=(DecisionTree const& other)
+DecisionTree::operator=(DecisionTree const& o)
 {
-    if (this != &other) {
-        _split_dimension = other._split_dimension;
-        _children = other._children;
+    if (this != &o) {
+        _is_leaf = o._is_leaf;
+        _index = o._index;
+        _children = o._children;
     }
     return *this;
 }
