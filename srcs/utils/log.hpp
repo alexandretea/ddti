@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/log.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-30 15:42:02
-// Modified: 2017-07-30 17:44:19
+// Modified: 2017-08-06 16:04:44
 
 #ifndef LOG_H
 #define LOG_H
@@ -100,7 +100,7 @@ class Logger
 
             formatted_msg += utils::datetime::now_str("%d.%m.%Y %T") + "]";
             if (not _id.empty())
-                formatted_msg += "[" + _id + "]";
+                formatted_msg += " " + _id + ": ";
             return formatted_msg + " " + msg;
         }
 

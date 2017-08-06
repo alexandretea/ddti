@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiCommunicator.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 17:51:48
-// Modified: 2017-08-05 00:23:23
+// Modified: 2017-08-06 18:13:13
 
 #ifndef MPIPROCESS_H
 #define MPIPROCESS_H
@@ -31,6 +31,7 @@ class Communicator
         int                 rank() const;
         int                 size() const;
         std::string const&  name() const;
+        void                barrier() const;
 
         // communication functions for a single entry
         template <typename T>
@@ -52,13 +53,14 @@ class Communicator
 
         template <typename T>
         void
-        broadcast(T& data, int root) const
+        recv_broadcast(T& data, int root) const
         { broadcast(&data, 1, root); }
 
         template <typename T>
         void
-        broadcast_send(T data, int root) const
-        { broadcast(&data, 1, root); }
+        broadcast(T data) const
+        { broadcast(&data, 1, _rank); }
+        // take data as a copy
         // to handle sending of const values as MPI_Bcast() takes a non-const v
         // TODO find better solution
 
@@ -80,18 +82,37 @@ class Communicator
         void
         broadcast(T* buffer, int count, int root) const
         { broadcast(buffer, datatype::get<T>(), count, root); }
+        // TODO templated scatter functions
+
+        template <typename RecvType = double>
+        RecvType*
+        scatter(void const* sbuf, int scount, MPI_Datatype const& stype,
+                int rcount) const
+        {
+            RecvType*  rbuf;
+
+            rbuf = new double[rcount];
+            scatter(sbuf, scount, stype, rbuf, rcount,
+                    datatype::get<RecvType>());
+            return rbuf;
+        }
 
         // 'raw' communication functions
         // NOTE: we keep non-templated functions to handle
         // user-defined datatypes
-        void    send(int dest, void const* buffer, MPI_Datatype datatype,
+        void    send(int dest, void const* buffer, MPI_Datatype const& datatype,
                      int count, int tag = MPI_ANY_TAG) const;
-        void    recv(void* buffer, MPI_Datatype datatype, int count,
+        void    recv(void* buffer, MPI_Datatype const& datatype, int count,
                      int source = MPI_ANY_SOURCE,
                      int tag = MPI_ANY_TAG,
                      MPI_Status* status = MPI_STATUS_IGNORE) const;
-        void    broadcast(void* buffer, MPI_Datatype datatype, int count,
+        void    broadcast(void* buffer, MPI_Datatype const& datatype, int count,
                           int root) const;
+        void    scatter(void const* sbuf, int scount, MPI_Datatype const& stype,
+                        void* rbuf, int rcount,
+                        MPI_Datatype const& rtype) const;
+        void    recv_scatter(void* buffer, int count, MPI_Datatype const& type,
+                             int root) const;
         // TODO mpi error handler, abort vs returns
 
     protected:

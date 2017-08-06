@@ -4,21 +4,22 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-05 00:38:38
+// Modified: 2017-08-06 18:15:24
 
 #include <algorithm>
 #include <vector>
 #include <unordered_map>
 #include "InductionC4_5.hpp"
 #include "task.hpp"
+#include "TaskC4_5.hpp"
 #include "MpiDatatype.hpp"
 
 namespace ddti {
 namespace induction {
 
 C4_5::C4_5(size_t nb_slaves, utils::mpi::Communicator const& comm_process)
-    : _stop(false), _nb_slaves(nb_slaves), _communicator(comm_process),
-      _mpi_types(), _labels_dim(-1)
+    : _nb_slaves(nb_slaves), _communicator(comm_process),
+      _tasks(_communicator, _nb_slaves), _mpi_types(), _labels_dim(-1)
 {
 }
 
@@ -40,7 +41,7 @@ C4_5::operator()(arma::mat const& data, // TODO change to arma::Mat<uint> ?
     dt_root = rec_train_node(data.submat(0, 0, data.n_rows - 1,
                                          data.n_cols - 1),
                              attributes);
-    _communicator.broadcast_send(task::End, ANode::MasterRank);
+    _communicator.broadcast(task::End);
     // end of induction? although pruning
 
     //size_t          chunk_size;
@@ -67,7 +68,6 @@ C4_5::rec_train_node(arma::subview<double> const& data,
 {
     size_t          majority_class;
     bool            is_only_class;
-    MPI_Datatype    column_type;
 
     if (data.n_cols == 0)
         throw std::runtime_error("Not enough data");
@@ -77,10 +77,37 @@ C4_5::rec_train_node(arma::subview<double> const& data,
         return new DecisionTree(majority_class, true);
     }
     // TODO bufferised scatter + bufferised load of matrix
-    column_type = _mpi_types.matrix_column<double>(data.n_rows, data.n_cols);
-    // TODO scatter
-    // use mempter() or colptr() instead
+    data.col(0).print();    // TODO remove debug
+
+    // Attribute selection
+    arma::mat   to_process;
+
+    _communicator.broadcast(task::C4_5::AttrSelectCode);
+    to_process = scatter_matrix(data);
+    _tasks.attribute_selection(to_process);
+    // End of attribute selection
     return nullptr;
+}
+
+arma::mat
+C4_5::scatter_matrix(arma::subview<double> const& data)
+{
+    MPI_Datatype    column_type;
+    size_t          chunk_size;
+    double*         aux_mem;
+    arma::mat       matrix;
+
+    column_type = _mpi_types.matrix_contiguous_entry<double>(data.n_rows);
+    // armadillo matrices are column-major
+    chunk_size = data.n_cols / _nb_slaves;  // TODO what if odd number?
+    _communicator.broadcast(data.n_rows);   // nb elems
+    _communicator.broadcast(chunk_size);    // nb entries
+    aux_mem = _communicator.scatter<double>(data.colptr(0), chunk_size,
+                                            column_type,
+                                            chunk_size * data.n_rows);
+    matrix = arma::mat(aux_mem, chunk_size, data.n_rows);
+    delete aux_mem;
+    return matrix;
 }
 
 // static functions

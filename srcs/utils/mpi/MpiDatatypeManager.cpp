@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/mpi/MpiDatatypeManager.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-05 00:07:16
-// Modified: 2017-08-05 00:43:14
+// Modified: 2017-08-06 01:13:25
 
 #include <mpi.h>
 #include "MpiDatatypeManager.hpp"

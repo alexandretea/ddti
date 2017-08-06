@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/Communicator.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:02:13
-// Modified: 2017-08-02 17:10:03
+// Modified: 2017-08-06 17:25:27
 
 #include "MpiCommunicator.hpp"
 #include "MpiException.hpp"
@@ -49,7 +49,16 @@ Communicator::name() const
 }
 
 void
-Communicator::send(int dest, void const* buffer, MPI_Datatype datatype,
+Communicator::barrier() const
+{
+    int error_code;
+
+    if ((error_code = MPI_Barrier(_comm)) != MPI_SUCCESS)
+        throw mpi::Exception(error_code);
+}
+
+void
+Communicator::send(int dest, void const* buffer, MPI_Datatype const& datatype,
                    int count, int tag) const
 {
     int error_code;
@@ -60,8 +69,8 @@ Communicator::send(int dest, void const* buffer, MPI_Datatype datatype,
 }
 
 void
-Communicator::recv(void* buffer, MPI_Datatype datatype, int count, int source,
-                   int tag, MPI_Status* status) const
+Communicator::recv(void* buffer, MPI_Datatype const& datatype, int count,
+                   int source, int tag, MPI_Status* status) const
 {
     int error_code;
 
@@ -71,13 +80,39 @@ Communicator::recv(void* buffer, MPI_Datatype datatype, int count, int source,
 }
 
 void
-Communicator::broadcast(void* buffer, MPI_Datatype datatype, int count,
+Communicator::broadcast(void* buffer, MPI_Datatype const& datatype, int count,
                         int root) const
 {
     int error_code;
 
     if ((error_code = MPI_Bcast(buffer, count, datatype, root, _comm))
             != MPI_SUCCESS)
+        throw mpi::Exception(error_code);
+}
+
+void
+Communicator::scatter(void const* sbuf, int scount, MPI_Datatype const& stype,
+                      void* rbuf, int rcount, MPI_Datatype const& rtype) const
+{
+    int error_code;
+
+    if ((error_code = MPI_Scatter(sbuf, scount, stype, rbuf, rcount, rtype,
+                                  _rank, _comm)) != MPI_SUCCESS)
+        throw mpi::Exception(error_code);
+}
+
+void
+Communicator::recv_scatter(void* buffer, int count, MPI_Datatype const& type,
+                           int root) const
+{
+    int error_code;
+
+    //int MPI_Scatter(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
+    //               void *recvbuf, int recvcount, MPI_Datatype recvtype, int root,
+    //                              MPI_Comm comm)
+    //
+    if ((error_code = MPI_Scatter(nullptr, 0, type, buffer, count, type, root,
+                                  _comm)) != MPI_SUCCESS)
         throw mpi::Exception(error_code);
 }
 

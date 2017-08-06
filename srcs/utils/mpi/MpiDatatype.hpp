@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/MpiDatatype.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 17:15:48
-// Modified: 2017-08-05 00:40:54
+// Modified: 2017-08-06 00:47:38
 
 #ifndef MPIDATATYPE_H
 #define MPIDATATYPE_H
@@ -38,6 +38,7 @@ MPI_IMPL_GET_DATATYPE(unsigned char, MPI_UNSIGNED_CHAR);
 MPI_IMPL_GET_DATATYPE(unsigned short, MPI_UNSIGNED_SHORT);
 MPI_IMPL_GET_DATATYPE(unsigned, MPI_UNSIGNED);
 MPI_IMPL_GET_DATATYPE(unsigned long, MPI_UNSIGNED_LONG);
+MPI_IMPL_GET_DATATYPE(unsigned long long, MPI_UNSIGNED_LONG_LONG);
 
 std::string  get_name(MPI_Datatype const& datatype);
 

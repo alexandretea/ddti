@@ -4,28 +4,45 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-03 15:59:10
+// Modified: 2017-08-06 17:59:14
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H
 
+#include <unordered_map>
 #include <string>
 #include "task.hpp"
+#include "MpiCommunicator.hpp"
 
 namespace ddti {
 namespace task {
 
-class C4_5 : public ATask
+class C4_5
 {
     public:
-        C4_5();
+        static const int    AttrSelectCode;
+        typedef void        (C4_5::*TaskFn)();
+
+    public:
+        C4_5(utils::mpi::Communicator const& comm, size_t nb_slaves);
         virtual ~C4_5();
 
         C4_5(C4_5 const& other) = delete;
         C4_5&   operator=(C4_5 const& other) = delete;
 
     public:
-        virtual std::string name() const;
+        void        operator()(int task_code);
+        std::string name() const;
+
+        void        attribute_selection(arma::mat const& data) const;
+
+    protected:
+        void        attribute_selection();
+
+    protected:
+        utils::mpi::Communicator const&     _comm;
+        size_t                              _nb_slaves;
+        std::unordered_map<int, TaskFn>     _tasks;
 };
 
 }   // end of namespace task

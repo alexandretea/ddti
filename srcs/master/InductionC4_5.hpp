@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-05 00:38:48
+// Modified: 2017-08-06 18:12:26
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -12,7 +12,8 @@
 #include <mlpack/core.hpp>  // TODO change with armadillo include
 #include "MasterNode.hpp"
 #include "DecisionTree.hpp"
-#include "mpi/MPIDatatypeManager.hpp"
+#include "MPIDatatypeManager.hpp"
+#include "TaskC4_5.hpp"
 
 namespace ddti {
 namespace induction {
@@ -21,7 +22,7 @@ namespace induction {
 class C4_5
 {
     public:
-        C4_5(size_t nb_slaves, utils::mpi::Communicator const& comm_process);
+        C4_5(size_t nb_slaves, utils::mpi::Communicator const& comm);
         virtual ~C4_5();
 
         C4_5(C4_5 const& other) = delete;
@@ -37,16 +38,16 @@ class C4_5
         // TODO check signatures of the functions below
         DecisionTree*   rec_train_node(arma::subview<double> const& data,
                                        std::vector<size_t> const& attrs);
-        //void    compute_contingency_tables();
+        arma::mat       scatter_matrix(arma::subview<double> const& data);
 
         static size_t
         find_majority_class(arma::subview_row<double> const& data,
                             bool* is_only_class = nullptr);
 
     protected:
-        bool                            _stop;  // TODO useless?
         size_t                          _nb_slaves;
         utils::mpi::Communicator const& _communicator;
+        task::C4_5                      _tasks;
         utils::mpi::datatype::Manager   _mpi_types;
         ssize_t                         _labels_dim;
 };
