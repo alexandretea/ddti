@@ -11,6 +11,7 @@ TODO
 - An MPI implementation
 - Armadillo (for matrices)
 - MLpack (for Load() and Logger)
+- CMake
 
 ## Misc
 Link to some datasets:

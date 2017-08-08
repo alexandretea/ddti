@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/Communicator.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:02:13
-// Modified: 2017-08-06 17:25:27
+// Modified: 2017-08-06 18:21:32
 
 #include "MpiCommunicator.hpp"
 #include "MpiException.hpp"
@@ -15,13 +15,13 @@ namespace mpi {
 Communicator::Communicator(MPI_Comm const& comm)
     : _comm(comm)
 {
-	char	processor_name[MPI_MAX_PROCESSOR_NAME];
-	int		name_len;
+    char    processor_name[MPI_MAX_PROCESSOR_NAME];
+    int     name_len;
 
     MPI_Init(NULL, NULL);
-	MPI_Comm_size(comm, &_size);
-	MPI_Comm_rank(comm, &_rank);
-	MPI_Get_processor_name(processor_name, &name_len);
+    MPI_Comm_size(comm, &_size);
+    MPI_Comm_rank(comm, &_rank);
+    MPI_Get_processor_name(processor_name, &name_len);
     _name = std::string(processor_name, name_len);
 }
 

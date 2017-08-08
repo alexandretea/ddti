@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-06 18:15:24
+// Modified: 2017-08-08 13:52:56
 
 #include <algorithm>
 #include <vector>
@@ -29,7 +29,7 @@ C4_5::~C4_5()
 
 DecisionTree*
 C4_5::operator()(arma::mat const& data, // TODO change to arma::Mat<uint> ?
-                 mlpack::data::DatasetInfo const& data_info,
+                 utils::mlpack::DatasetMappings const& mappings,
                  size_t labels_dim)
 {
     std::vector<size_t> attributes(data.n_rows);
@@ -38,27 +38,12 @@ C4_5::operator()(arma::mat const& data, // TODO change to arma::Mat<uint> ?
 
     std::iota(attributes.begin(), attributes.end(), 0); // build attributes vec
     _labels_dim = labels_dim;
+    _mappings = mappings;
     dt_root = rec_train_node(data.submat(0, 0, data.n_rows - 1,
                                          data.n_cols - 1),
                              attributes);
     _communicator.broadcast(task::End);
-    // end of induction? although pruning
-
-    //size_t          chunk_size;
-
-    // split dataset into N chunks, where N is the number of slave nodes
-    //chunk_size = data.n_cols / _nb_slaves;
-    //for (size_t i = 0; i < _nb_slaves; ++i) {
-        //size_t first_row = i * chunk_size;
-        //size_t last_row = first_row + chunk_size - 1;
-
-        //arma::subview<double> tmp = data.cols(first_row, last_row);
-        //mlpack::Log::Info << "Split " << first_row << "-" << last_row
-            //<< " size: " << tmp.n_cols << std::endl;
-    //}
-
-    // TODO master: broadcast flag split/stop
-    // TODO slave task container ddti::tasks::C4_5()
+    // TODO end of induction? although pruning
     return dt_root;
 }
 
@@ -77,8 +62,6 @@ C4_5::rec_train_node(arma::subview<double> const& data,
         return new DecisionTree(majority_class, true);
     }
     // TODO bufferised scatter + bufferised load of matrix
-    data.col(0).print();    // TODO remove debug
-
     // Attribute selection
     arma::mat   to_process;
 
@@ -99,13 +82,14 @@ C4_5::scatter_matrix(arma::subview<double> const& data)
 
     column_type = _mpi_types.matrix_contiguous_entry<double>(data.n_rows);
     // armadillo matrices are column-major
-    chunk_size = data.n_cols / _nb_slaves;  // TODO what if odd number?
+    chunk_size = data.n_cols / _nb_slaves + 1;  // TODO what if odd number? and fix nb_slaes +1
     _communicator.broadcast(data.n_rows);   // nb elems
     _communicator.broadcast(chunk_size);    // nb entries
+
     aux_mem = _communicator.scatter<double>(data.colptr(0), chunk_size,
                                             column_type,
                                             chunk_size * data.n_rows);
-    matrix = arma::mat(aux_mem, chunk_size, data.n_rows);
+    matrix = arma::mat(aux_mem, data.n_rows, chunk_size);
     delete aux_mem;
     return matrix;
 }

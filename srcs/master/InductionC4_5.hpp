@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-06 18:12:26
+// Modified: 2017-08-07 14:46:59
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -30,7 +30,7 @@ class C4_5
 
     public:
         DecisionTree*   operator()(arma::mat const& data,
-                                   mlpack::data::DatasetInfo const& info,
+                                   utils::mlpack::DatasetMappings const& maps,
                                    size_t labels_dim);
 
     protected:
@@ -49,7 +49,10 @@ class C4_5
         utils::mpi::Communicator const& _communicator;
         task::C4_5                      _tasks;
         utils::mpi::datatype::Manager   _mpi_types;
+
+        // used during training:
         ssize_t                         _labels_dim;
+        utils::mlpack::DatasetMappings  _mappings;
 };
 
 }   // end of namespace induction

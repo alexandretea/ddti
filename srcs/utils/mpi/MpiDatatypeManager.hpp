@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/mpi/MpiDatatypeManager.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-04 23:38:51
-// Modified: 2017-08-05 23:15:05
+// Modified: 2017-08-07 21:35:03
 
 #ifndef MPIDATATYPEMANAGER_H
 #define MPIDATATYPEMANAGER_H
@@ -14,6 +14,7 @@
 #include <mpi.h>
 #include "MpiException.hpp"
 #include "MpiDatatype.hpp"
+#include <iostream> // TODO remove debug
 
 namespace utils {
 namespace mpi {
@@ -45,6 +46,7 @@ class Manager
             MPI_Datatype    entry;
             int             error_code;
 
+            std::cout << "debug: " << nb_elems << std::endl;
             if ((error_code = MPI_Type_vector(nb_elems, 1, 1,
                                               datatype::get<T>(), &entry))
                     != MPI_SUCCESS)

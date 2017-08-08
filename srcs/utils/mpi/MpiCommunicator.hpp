@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiCommunicator.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 17:51:48
-// Modified: 2017-08-06 18:13:13
+// Modified: 2017-08-08 11:44:21
 
 #ifndef MPIPROCESS_H
 #define MPIPROCESS_H
@@ -91,7 +91,7 @@ class Communicator
         {
             RecvType*  rbuf;
 
-            rbuf = new double[rcount];
+            rbuf = new RecvType[rcount];
             scatter(sbuf, scount, stype, rbuf, rcount,
                     datatype::get<RecvType>());
             return rbuf;

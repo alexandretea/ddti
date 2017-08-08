@@ -4,13 +4,14 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-06 18:14:26
+// Modified: 2017-08-08 13:52:23
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
 #include "MpiDatatype.hpp"
 #include "ANode.hpp"
 #include "ddti_log.hpp"
+#include "utils/mlpack.hpp"
 
 namespace ddti {
 namespace task {
@@ -58,7 +59,7 @@ C4_5::attribute_selection()
     // expects entries to arrive contiguously
     _comm.recv_scatter(aux_mem, nb_entries * nb_elems,
                        utils::mpi::datatype::get<double>(), ANode::MasterRank);
-    matrix = arma::mat(aux_mem, nb_entries, nb_elems);
+    matrix = arma::mat(aux_mem, nb_elems, nb_entries);
     // TODO extra copy, use constructor param to force non-copy?
     delete aux_mem;
     attribute_selection(matrix);
@@ -69,7 +70,6 @@ C4_5::attribute_selection(arma::mat const& data) const
 {
     ddti::Logger << "Received matrix (" + std::to_string(data.n_cols) + "*"
         + std::to_string(data.n_rows) + ")";
-    data.row(0).print();
 }
 
 }   // end of namespace task
