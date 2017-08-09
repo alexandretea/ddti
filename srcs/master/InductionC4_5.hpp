@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-07 14:46:59
+// Modified: 2017-08-09 15:16:02
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -14,6 +14,7 @@
 #include "DecisionTree.hpp"
 #include "MPIDatatypeManager.hpp"
 #include "TaskC4_5.hpp"
+#include "Dataset.hpp"
 
 namespace ddti {
 namespace induction {
@@ -29,9 +30,7 @@ class C4_5
         C4_5&           operator=(C4_5 const& other) = delete;
 
     public:
-        DecisionTree*   operator()(arma::mat const& data,
-                                   utils::mlpack::DatasetMappings const& maps,
-                                   size_t labels_dim);
+        DecisionTree*   operator()(Dataset<double> const& dataset);
 
     protected:
         // TODO keep track of attributes? datasetinfo?
@@ -51,8 +50,7 @@ class C4_5
         utils::mpi::datatype::Manager   _mpi_types;
 
         // used during training:
-        ssize_t                         _labels_dim;
-        utils::mlpack::DatasetMappings  _mappings;
+        Dataset<double>                 _dataset;
 };
 
 }   // end of namespace induction

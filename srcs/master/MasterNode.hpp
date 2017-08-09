@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-07 14:55:54
+// Modified: 2017-08-09 15:14:39
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -13,7 +13,7 @@
 #include "ANode.hpp"
 #include "DecisionTree.hpp"
 #include "ddti_log.hpp"
-#include "utils/mlpack.hpp"
+#include "Dataset.hpp"
 
 namespace ddti {
 
@@ -27,8 +27,7 @@ class MasterNode : public ANode
                    std::string const& training_set, int labels_dim,
                    std::string const& test_set = "")
             : ANode(process), _training_set(training_set),
-              _labels_dim(labels_dim), _test_set(test_set), _data(),
-              _mappings()
+              _labels_dim(labels_dim), _test_set(test_set), _data()
         {}
 
         virtual ~MasterNode() {}
@@ -42,18 +41,18 @@ class MasterNode : public ANode
         {
             ddti::Logger << "Running";
             try {
-                InductionAlgo               induction_algorithm(nb_slaves(),
-                                                                _communicator);
                 DecisionTree*               dt_root;
                 mlpack::data::DatasetInfo   data_info;
+                InductionAlgo               induction_algorithm(nb_slaves(),
+                                                                _communicator);
 
                 mlpack::data::Load(_training_set, _data, data_info, true);
-                _mappings = utils::mlpack::get_mappings(data_info);
                 if (_labels_dim == -1)  // labels dimension is not set
                     _labels_dim = _data.n_rows - 1;
                 ddti::Logger << "Decision tree induction started"; // TODO log config
-
-                dt_root = induction_algorithm(_data, _mappings, _labels_dim);
+                dt_root = induction_algorithm(
+                    Dataset<double>(_data, _labels_dim, &data_info)
+                );
                 ddti::Logger << "Induction complete";
             } catch (std::exception const& e) {
                 ddti::Logger.log(e.what(), mlpack::Log::Fatal);
@@ -61,11 +60,10 @@ class MasterNode : public ANode
         }
 
     protected:
-        std::string                     _training_set;
-        int                             _labels_dim;
-        std::string                     _test_set;
-        arma::mat                       _data;
-        utils::mlpack::DatasetMappings  _mappings;
+        std::string                 _training_set;
+        int                         _labels_dim;
+        std::string                 _test_set;
+        arma::mat                   _data;
 };
 
 }   // end of namespace ddti

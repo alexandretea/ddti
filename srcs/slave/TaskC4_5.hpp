@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-06 17:59:14
+// Modified: 2017-08-09 14:07:23
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H
@@ -35,6 +35,8 @@ class C4_5
         std::string name() const;
 
         void        attribute_selection(arma::mat const& data) const;
+        void        attribute_selection(arma::mat const& data,
+                                        size_t labels_dim) const;
 
     protected:
         void        attribute_selection();

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-08 13:52:56
+// Modified: 2017-08-09 15:49:04
 
 #include <algorithm>
 #include <vector>
@@ -19,7 +19,7 @@ namespace induction {
 
 C4_5::C4_5(size_t nb_slaves, utils::mpi::Communicator const& comm_process)
     : _nb_slaves(nb_slaves), _communicator(comm_process),
-      _tasks(_communicator, _nb_slaves), _mpi_types(), _labels_dim(-1)
+      _tasks(_communicator, _nb_slaves), _mpi_types()
 {
 }
 
@@ -28,19 +28,16 @@ C4_5::~C4_5()
 }
 
 DecisionTree*
-C4_5::operator()(arma::mat const& data, // TODO change to arma::Mat<uint> ?
-                 utils::mlpack::DatasetMappings const& mappings,
-                 size_t labels_dim)
+C4_5::operator()(Dataset<double> const& dataset) // TODO change to <uint> ?
 {
-    std::vector<size_t> attributes(data.n_rows);
+    std::vector<size_t> attributes(dataset.n_rows());
     DecisionTree*       dt_root;
     int                 task_code;
 
     std::iota(attributes.begin(), attributes.end(), 0); // build attributes vec
-    _labels_dim = labels_dim;
-    _mappings = mappings;
-    dt_root = rec_train_node(data.submat(0, 0, data.n_rows - 1,
-                                         data.n_cols - 1),
+    _dataset = dataset;
+    dt_root = rec_train_node(dataset.subview(0, 0, dataset.n_rows() - 1,
+                                             dataset.n_cols() - 1),
                              attributes);
     _communicator.broadcast(task::End);
     // TODO end of induction? although pruning
@@ -56,18 +53,24 @@ C4_5::rec_train_node(arma::subview<double> const& data,
 
     if (data.n_cols == 0)
         throw std::runtime_error("Not enough data");
-    majority_class = C4_5::find_majority_class(data.row(_labels_dim),
+    majority_class = C4_5::find_majority_class(data.row(_dataset.labelsdim()),
                                                &is_only_class);
     if (is_only_class or attrs.empty()) {   // TODO min nb instances?
         return new DecisionTree(majority_class, true);
     }
     // TODO bufferised scatter + bufferised load of matrix
-    // Attribute selection
+
+    // attribute selection
     arma::mat   to_process;
 
     _communicator.broadcast(task::C4_5::AttrSelectCode);
     to_process = scatter_matrix(data);
-    _tasks.attribute_selection(to_process);
+
+    // debug
+    //if (not _dataset.validate(to_process))
+        //throw std::runtime_error("invalid data");
+
+    _tasks.attribute_selection(to_process, _dataset.labelsdim());
     // End of attribute selection
     return nullptr;
 }
@@ -83,14 +86,14 @@ C4_5::scatter_matrix(arma::subview<double> const& data)
     column_type = _mpi_types.matrix_contiguous_entry<double>(data.n_rows);
     // armadillo matrices are column-major
     chunk_size = data.n_cols / _nb_slaves + 1;  // TODO what if odd number? and fix nb_slaes +1
-    _communicator.broadcast(data.n_rows);   // nb elems
-    _communicator.broadcast(chunk_size);    // nb entries
-
+    _communicator.broadcast(data.n_rows);           // nb elems
+    _communicator.broadcast(chunk_size);            // nb entries
+    _communicator.broadcast(_dataset.labelsdim());  // labels dimension
     aux_mem = _communicator.scatter<double>(data.colptr(0), chunk_size,
                                             column_type,
                                             chunk_size * data.n_rows);
     matrix = arma::mat(aux_mem, data.n_rows, chunk_size);
-    delete aux_mem;
+    delete aux_mem; // TODO extra copy; use param of mat ctor to avoid that?
     return matrix;
 }
 
