@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-09 15:49:04
+// Modified: 2017-08-09 17:32:29
 
 #include <algorithm>
 #include <vector>
@@ -50,6 +50,7 @@ C4_5::rec_train_node(arma::subview<double> const& data,
 {
     size_t          majority_class;
     bool            is_only_class;
+    std::vector<size_t> mapping_sizes;
 
     if (data.n_cols == 0)
         throw std::runtime_error("Not enough data");
@@ -63,14 +64,12 @@ C4_5::rec_train_node(arma::subview<double> const& data,
     // attribute selection
     arma::mat   to_process;
 
+    mapping_sizes = _dataset.mapping_sizes();
     _communicator.broadcast(task::C4_5::AttrSelectCode);
     to_process = scatter_matrix(data);
+    _communicator.bcast_vec(mapping_sizes);     // nb of values by dimension
 
-    // debug
-    //if (not _dataset.validate(to_process))
-        //throw std::runtime_error("invalid data");
-
-    _tasks.attribute_selection(to_process, _dataset.labelsdim());
+    _tasks.attribute_selection(to_process, _dataset.labelsdim(), mapping_sizes);
     // End of attribute selection
     return nullptr;
 }
@@ -78,10 +77,10 @@ C4_5::rec_train_node(arma::subview<double> const& data,
 arma::mat
 C4_5::scatter_matrix(arma::subview<double> const& data)
 {
-    MPI_Datatype    column_type;
-    size_t          chunk_size;
-    double*         aux_mem;
-    arma::mat       matrix;
+    MPI_Datatype        column_type;
+    size_t              chunk_size;
+    double*             aux_mem;
+    arma::mat           matrix;
 
     column_type = _mpi_types.matrix_contiguous_entry<double>(data.n_rows);
     // armadillo matrices are column-major

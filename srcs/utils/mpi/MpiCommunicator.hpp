@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiCommunicator.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 17:51:48
-// Modified: 2017-08-08 11:44:21
+// Modified: 2017-08-09 17:26:00
 
 #ifndef MPIPROCESS_H
 #define MPIPROCESS_H
@@ -12,6 +12,7 @@
 #include <string>
 #include <mpi.h>
 #include <ostream>
+#include <vector>
 #include "MpiDatatype.hpp"
 
 namespace utils {
@@ -77,6 +78,23 @@ class Communicator
              int tag = MPI_ANY_TAG,
              MPI_Status* status = MPI_STATUS_IGNORE) const
         { recv(buffer, datatype::get<T>(), count, source, tag, status); }
+
+        template <typename T>
+        void
+        bcast_vec(std::vector<T> /* const */& container) const
+        { broadcast(&container.front(), container.size(), _rank); }
+        // container is not const bc MPI_Bcast() don't take consts
+
+        template <typename T>
+        std::vector<T>
+        recv_bcast_vec(size_t count, int root) const
+        {
+            std::vector<T>  data(count);
+
+            broadcast(&data.front(), count, root);
+            return data;
+        }
+        // container is not const bc MPI_Bcast() don't take consts
 
         template <typename T>
         void
