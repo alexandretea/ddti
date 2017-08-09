@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-09 17:33:22
+// Modified: 2017-08-09 18:37:27
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -74,13 +74,25 @@ void
 C4_5::attribute_selection(arma::mat const& data, size_t labels_dim,
                           std::vector<size_t> const& dim_values) const
 {
-    std::unordered_map<size_t, arma::mat>  contingency_tables;  // <dim, ct>
+    std::unordered_map<size_t, arma::Mat<unsigned int>> contingency_tables;
+    //                <attr,   contingency table>
 
     ddti::Logger << "Received matrix (" + std::to_string(data.n_cols) + "*"
         + std::to_string(data.n_rows) + ")";
     // compute contingency tables
     for (unsigned int dim = 0; dim < data.n_rows; ++dim) {
         if (dim != labels_dim) {
+            contingency_tables[dim] = arma::Mat<unsigned int>(
+                dim_values[dim], dim_values[labels_dim], arma::fill::zeros);
+
+            for (size_t i = 0; i < data.n_cols; ++i) {
+                contingency_tables[dim](data(dim, i), data(labels_dim, i)) += 1;
+                // attr cont. table     dim value     label dim value
+            }
+
+            std::cout << "--- dim " << dim << std::endl;
+            contingency_tables[dim].print();
+            std::cout << "---" << std::endl;
         }
     }
 }
