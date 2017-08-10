@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-10 20:27:57
+// Modified: 2017-08-10 22:00:57
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -17,8 +17,8 @@ namespace task {
 
 const int    C4_5::AttrSelectCode = 42;
 
-C4_5::C4_5(utils::mpi::Communicator const& comm, size_t nb_slaves)
-    : _comm(comm), _nb_slaves(nb_slaves)
+C4_5::C4_5(utils::mpi::Communicator const& comm)
+    : _comm(comm)
 {
     _tasks[C4_5::AttrSelectCode] = &C4_5::count_contingencies;
 }
@@ -88,7 +88,7 @@ C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
             // count values
             for (size_t i = 0; i < data.n_cols; ++i) {
                 local_ct(data(dim, i), data(labels_dim, i)) += 1;
-                // curr dim val  label dim value
+                //       curr dim val  label dim value
             }
             // reduce local contingency table
             reduced_ct = _comm.reduce(local_ct.memptr(), local_ct.n_elem,

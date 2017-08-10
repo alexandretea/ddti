@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/SlaveNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-10 20:03:12
+// Modified: 2017-08-10 22:03:31
 
 #ifndef SLAVENODE_H
 #define SLAVENODE_H
@@ -21,7 +21,7 @@ class SlaveNode : public ANode
 {
     public:
         SlaveNode(utils::mpi::Communicator const& comm)
-            : ANode(comm), _task_manager(comm, nb_slaves()) {}
+            : ANode(comm), _task_manager(comm) {}
 
         virtual ~SlaveNode() {}
 

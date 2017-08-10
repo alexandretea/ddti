@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-10 20:33:05
+// Modified: 2017-08-10 22:06:11
 
 #include <algorithm>
 #include <vector>
@@ -17,9 +17,8 @@
 namespace ddti {
 namespace induction {
 
-C4_5::C4_5(size_t nb_slaves, utils::mpi::Communicator const& comm_process)
-    : _nb_slaves(nb_slaves), _communicator(comm_process),
-      _tasks(_communicator, _nb_slaves), _mpi_types()
+C4_5::C4_5(utils::mpi::Communicator const& comm_process)
+    : _comm(comm_process), _tasks(_comm), _mpi_types()
 {
 }
 
@@ -39,7 +38,7 @@ C4_5::operator()(Dataset<double> const& dataset) // TODO change to <uint> ?
     dt_root = rec_train_node(dataset.subview(0, 0, dataset.n_rows() - 1,
                                              dataset.n_cols() - 1),
                              attributes);
-    _communicator.broadcast(task::End);
+    _comm.broadcast(task::End);
     // TODO end of induction? although pruning
     return dt_root;
 }
@@ -48,9 +47,8 @@ DecisionTree*
 C4_5::rec_train_node(arma::subview<double> const& data,
                      std::vector<size_t> const& attrs)
 {
-    size_t          majority_class;
-    bool            is_only_class;
-    std::vector<size_t> mapping_sizes;
+    size_t              majority_class;
+    bool                is_only_class;
 
     if (data.n_cols == 0)
         throw std::runtime_error("Not enough data");
@@ -61,19 +59,33 @@ C4_5::rec_train_node(arma::subview<double> const& data,
     }
     // TODO bufferised scatter + bufferised load of matrix
 
+
     // attribute selection
+    std::map<size_t, ContTable> conts = count_contingencies(data);
+    // DEBUG
+    // TODO check if contingency tables are validddd
+    _dataset.debug_mappings();
+    for (auto& ct: conts) {
+        std::cout << "--- ct no. " << ct.first << std::endl;
+        ct.second.print();
+    }
+    return nullptr;
+}
+
+std::map<size_t, ContTable>
+C4_5::count_contingencies(arma::subview<double> const& data)
+{
     arma::mat                   to_process;
     std::map<size_t, ContTable> contingencies;
+    std::vector<size_t>         mapping_sizes;
 
     mapping_sizes = _dataset.mapping_sizes();
-    _communicator.broadcast(task::C4_5::AttrSelectCode);
+    _comm.broadcast(task::C4_5::AttrSelectCode);
     to_process = scatter_matrix(data);  // TODO refacto scatter based on reduce design?
-    _communicator.bcast_vec(mapping_sizes);     // nb of values by dimension
+    _comm.bcast_vec(mapping_sizes);     // nb of values by dimension
     _tasks.count_contingencies(to_process, _dataset.labelsdim(), mapping_sizes,
                                &contingencies);
-    ddti::Logger << "Nb of contingency tables: " + std::to_string(contingencies.size());
-    // End of attribute selection
-    return nullptr;
+    return contingencies;
 }
 
 arma::mat
@@ -86,16 +98,15 @@ C4_5::scatter_matrix(arma::subview<double> const& data)
 
     column_type = _mpi_types.matrix_contiguous_entry<double>(data.n_rows);
     // armadillo matrices are column-major
-    chunk_size = data.n_cols / _nb_slaves + 1;
+    chunk_size = data.n_cols / _comm.size();
     // TODO check case odd number and fix nb_slaes +1
-    _communicator.broadcast(data.n_rows);           // nb elems
-    _communicator.broadcast(chunk_size);            // nb entries
-    _communicator.broadcast(_dataset.labelsdim());  // labels dimension
-    aux_mem = _communicator.scatter<double>(data.colptr(0), chunk_size,
-                                            column_type,
-                                            chunk_size * data.n_rows);
+    _comm.broadcast(data.n_rows);           // nb elems
+    _comm.broadcast(chunk_size);            // nb entries
+    _comm.broadcast(_dataset.labelsdim());  // labels dimension
+    aux_mem = _comm.scatter<double>(data.colptr(0), chunk_size, column_type,
+                                    chunk_size * data.n_rows);
     matrix = arma::mat(aux_mem, data.n_rows, chunk_size);
-    delete aux_mem; // TODO extra copy; use param of mat ctor to avoid that?
+    delete aux_mem;
     return matrix;
 }
 

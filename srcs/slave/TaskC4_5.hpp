@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-10 20:27:06
+// Modified: 2017-08-10 22:00:53
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H
@@ -25,7 +25,7 @@ class C4_5
         typedef void        (C4_5::*TaskFn)();
 
     public:
-        C4_5(utils::mpi::Communicator const& comm, size_t nb_slaves);
+        C4_5(utils::mpi::Communicator const& comm);
         virtual ~C4_5();
 
         C4_5(C4_5 const& other) = delete;
@@ -46,7 +46,6 @@ class C4_5
 
     protected:
         utils::mpi::Communicator const&     _comm;
-        size_t                              _nb_slaves;
         std::unordered_map<int, TaskFn>     _tasks;
 };
 
