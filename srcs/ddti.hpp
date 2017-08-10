@@ -4,20 +4,21 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/ddti_log.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-30 16:43:19
-// Modified: 2017-07-30 17:31:21
+// Modified: 2017-08-10 20:05:44
 
-#ifndef DDTI_LOG_H
-#define DDTI_LOG_H
+#ifndef DDTI_H
+#define DDTI_H
 
 #include <mlpack/core.hpp>
 #include "utils/log.hpp"
 
 namespace ddti {
 
-typedef utils::log::Logger<mlpack::util::PrefixedOutStream> MlpackLogger;
+using MlpackLogger  = utils::log::Logger<mlpack::util::PrefixedOutStream>;
+using ContTable     = arma::Mat<unsigned int>;  // Contingency table
 
 extern MlpackLogger   Logger;
 
 }
 
-#endif /* end of include guard: DDTI_LOG_H */
+#endif /* end of include guard: DDTI_H */

@@ -4,14 +4,14 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/SlaveNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-06 16:05:56
+// Modified: 2017-08-10 20:03:12
 
 #ifndef SLAVENODE_H
 #define SLAVENODE_H
 
 #include <mlpack/core.hpp>
 #include "ANode.hpp"
-#include "ddti_log.hpp"
+#include "ddti.hpp"
 #include "task.hpp"
 
 namespace ddti {

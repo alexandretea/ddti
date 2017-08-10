@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiCommunicator.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 17:51:48
-// Modified: 2017-08-09 17:26:00
+// Modified: 2017-08-10 20:30:29
 
 #ifndef MPIPROCESS_H
 #define MPIPROCESS_H
@@ -115,6 +115,18 @@ class Communicator
             return rbuf;
         }
 
+        template <typename T>
+        T*
+        reduce(T const* sdata, int count, MPI_Op const& op, int root = -1) const
+        {
+            T*  rbuf = nullptr;
+
+            if (root == -1 or root == _rank)
+                rbuf = new T[count];
+            reduce(sdata, count, datatype::get<T>(), op, rbuf, root);
+            return rbuf;
+        }
+
         // 'raw' communication functions
         // NOTE: we keep non-templated functions to handle
         // user-defined datatypes
@@ -131,6 +143,9 @@ class Communicator
                         MPI_Datatype const& rtype) const;
         void    recv_scatter(void* buffer, int count, MPI_Datatype const& type,
                              int root) const;
+        void    reduce(void const* sdata, int count, MPI_Datatype const& type,
+                       MPI_Op const& op, void* rbuffer = nullptr,
+                       int root = -1) const;
         // TODO mpi error handler, abort vs returns
 
     protected:

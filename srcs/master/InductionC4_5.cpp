@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-09 17:58:24
+// Modified: 2017-08-10 20:33:05
 
 #include <algorithm>
 #include <vector>
@@ -62,13 +62,16 @@ C4_5::rec_train_node(arma::subview<double> const& data,
     // TODO bufferised scatter + bufferised load of matrix
 
     // attribute selection
-    arma::mat   to_process;
+    arma::mat                   to_process;
+    std::map<size_t, ContTable> contingencies;
 
     mapping_sizes = _dataset.mapping_sizes();
     _communicator.broadcast(task::C4_5::AttrSelectCode);
-    to_process = scatter_matrix(data);
+    to_process = scatter_matrix(data);  // TODO refacto scatter based on reduce design?
     _communicator.bcast_vec(mapping_sizes);     // nb of values by dimension
-    _tasks.attribute_selection(to_process, _dataset.labelsdim(), mapping_sizes);
+    _tasks.count_contingencies(to_process, _dataset.labelsdim(), mapping_sizes,
+                               &contingencies);
+    ddti::Logger << "Nb of contingency tables: " + std::to_string(contingencies.size());
     // End of attribute selection
     return nullptr;
 }
@@ -84,7 +87,7 @@ C4_5::scatter_matrix(arma::subview<double> const& data)
     column_type = _mpi_types.matrix_contiguous_entry<double>(data.n_rows);
     // armadillo matrices are column-major
     chunk_size = data.n_cols / _nb_slaves + 1;
-    // TODO what if odd number? and fix nb_slaes +1
+    // TODO check case odd number and fix nb_slaes +1
     _communicator.broadcast(data.n_rows);           // nb elems
     _communicator.broadcast(chunk_size);            // nb entries
     _communicator.broadcast(_dataset.labelsdim());  // labels dimension

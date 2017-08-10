@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-09 17:30:18
+// Modified: 2017-08-10 20:27:06
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H
@@ -13,6 +13,7 @@
 #include <string>
 #include "task.hpp"
 #include "MpiCommunicator.hpp"
+#include "ddti.hpp"
 
 namespace ddti {
 namespace task {
@@ -34,13 +35,14 @@ class C4_5
         void        operator()(int task_code);
         std::string name() const;
 
-        void        attribute_selection(arma::mat const& data) const;
-        void        attribute_selection(arma::mat const& data, size_t labelsdim,
-                                        std::vector<size_t> const&
-                                            dim_values) const;
+        void        count_contingencies(arma::mat const& data) const;
+        void        count_contingencies(arma::mat const& data, size_t labelsdim,
+                                        std::vector<size_t> const& dim_values,
+                                        std::map<size_t, ContTable>* output
+                                            = nullptr) const;
 
     protected:
-        void        attribute_selection();
+        void        count_contingencies();
 
     protected:
         utils::mpi::Communicator const&     _comm;

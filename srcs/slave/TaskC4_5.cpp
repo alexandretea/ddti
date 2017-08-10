@@ -4,13 +4,13 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-09 18:37:27
+// Modified: 2017-08-10 20:27:57
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
 #include "MpiDatatype.hpp"
 #include "ANode.hpp"
-#include "ddti_log.hpp"
+#include "ddti.hpp"
 
 namespace ddti {
 namespace task {
@@ -20,7 +20,7 @@ const int    C4_5::AttrSelectCode = 42;
 C4_5::C4_5(utils::mpi::Communicator const& comm, size_t nb_slaves)
     : _comm(comm), _nb_slaves(nb_slaves)
 {
-    _tasks[C4_5::AttrSelectCode] = &C4_5::attribute_selection;
+    _tasks[C4_5::AttrSelectCode] = &C4_5::count_contingencies;
 }
 
 C4_5::~C4_5()
@@ -45,7 +45,7 @@ C4_5::name() const
 }
 
 void
-C4_5::attribute_selection()
+C4_5::count_contingencies()
 {
     size_t              nb_elems;
     size_t              nb_entries;
@@ -66,33 +66,40 @@ C4_5::attribute_selection()
     // TODO extra copy, use constructor param to force non-copy?
     delete aux_mem;
     dim_values = _comm.recv_bcast_vec<size_t>(nb_elems, ANode::MasterRank);
-    attribute_selection(matrix, labels_dimension, dim_values);
+    count_contingencies(matrix, labels_dimension, dim_values);
     // usage of dim_values only work bc we are using an IncrementPolicy
 }
 
 void
-C4_5::attribute_selection(arma::mat const& data, size_t labels_dim,
-                          std::vector<size_t> const& dim_values) const
+C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
+                          std::vector<size_t> const& dim_values,
+                          std::map<size_t, ContTable>* output) const
 {
-    std::unordered_map<size_t, arma::Mat<unsigned int>> contingency_tables;
-    //                <attr,   contingency table>
-
     ddti::Logger << "Received matrix (" + std::to_string(data.n_cols) + "*"
-        + std::to_string(data.n_rows) + ")";
-    // compute contingency tables
+                    + std::to_string(data.n_rows) + ")";
+
     for (unsigned int dim = 0; dim < data.n_rows; ++dim) {
         if (dim != labels_dim) {
-            contingency_tables[dim] = arma::Mat<unsigned int>(
-                dim_values[dim], dim_values[labels_dim], arma::fill::zeros);
 
+            ContTable       local_ct(dim_values[dim], dim_values[labels_dim],
+                                     arma::fill::zeros);
+            unsigned int*   reduced_ct(nullptr);
+
+            // count values
             for (size_t i = 0; i < data.n_cols; ++i) {
-                contingency_tables[dim](data(dim, i), data(labels_dim, i)) += 1;
-                // attr cont. table     dim value     label dim value
+                local_ct(data(dim, i), data(labels_dim, i)) += 1;
+                // curr dim val  label dim value
             }
+            // reduce local contingency table
+            reduced_ct = _comm.reduce(local_ct.memptr(), local_ct.n_elem,
+                                      MPI_SUM, ANode::MasterRank);
 
-            std::cout << "--- dim " << dim << std::endl;
-            contingency_tables[dim].print();
-            std::cout << "---" << std::endl;
+            // only the master node should satisfy the following condition
+            if (output != nullptr and reduced_ct != nullptr) {
+                (*output)[dim] = ContTable(reduced_ct, dim_values[dim],
+                                           dim_values[labels_dim]);
+                delete reduced_ct;
+            }
         }
     }
 }

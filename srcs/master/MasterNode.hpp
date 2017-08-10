@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-09 15:14:39
+// Modified: 2017-08-10 20:03:09
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -12,7 +12,7 @@
 #include <mlpack/core.hpp>
 #include "ANode.hpp"
 #include "DecisionTree.hpp"
-#include "ddti_log.hpp"
+#include "ddti.hpp"
 #include "Dataset.hpp"
 
 namespace ddti {
