@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-13 15:26:13
+// Modified: 2017-08-13 16:15:57
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -98,9 +98,16 @@ C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
 void
 C4_5::compute_cond_entropy()
 {
-    arma::Mat<unsigned int> matrix = recv_scatter_mat<unsigned int>(false);
+    ContTable matrix = recv_scatter_mat<unsigned int>(false); // receives rows
 
+    compute_cond_entropy(matrix);
+}
+
+void
+C4_5::compute_cond_entropy(ContTable const& matrix, double* centropy) const
+{
     matrix.print();
+    // TODO reduce with sum to get conditional entropy
 }
 
 }   // end of namespace task

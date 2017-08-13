@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-13 13:23:42
+// Modified: 2017-08-13 16:16:22
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H
@@ -44,6 +44,8 @@ class C4_5
                                         std::vector<size_t> const& dim_values,
                                         std::map<size_t, ContTable>* output
                                             = nullptr) const;
+        void        compute_cond_entropy(ContTable const& matrix,
+                                         double* centropy = nullptr) const;
 
     protected:
         void        count_contingencies();
@@ -62,7 +64,6 @@ class C4_5
             _comm.recv_broadcast(nb_entries, ANode::MasterRank);
 
             aux_mem = new T[nb_elems * nb_entries];
-            // expects entries to arrive contiguously // TODO or not if by row so..???
             _comm.recv_scatter(aux_mem, nb_entries * nb_elems,
                                utils::mpi::datatype::get<T>(),
                                ANode::MasterRank);

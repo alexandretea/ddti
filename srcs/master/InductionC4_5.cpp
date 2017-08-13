@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-13 15:26:30
+// Modified: 2017-08-13 17:40:27
 
 #include <algorithm>
 #include <vector>
@@ -69,27 +69,42 @@ C4_5::rec_train_node(arma::subview<double> const& data,
     }
     // TODO bufferised scatter + bufferised load of matrix
 
-    // attribute selection
+    size_t selected_attr = select_attribute(data, attrs, entropy);
+    // TODO task compute information gain
+    return nullptr;
+}
+
+size_t
+C4_5::select_attribute(arma::subview<double> const& data,
+                       std::vector<size_t> const& attrs, double entropy)
+{
     std::map<size_t, ContTable> conts = count_contingencies(data);
 
+    // debug  conts
     for (auto& dim: attrs) {
         if (dim == _dataset.labelsdim())
             continue ;  // TODO remove labelsdims from vec attrs
-        send_task(task::C4_5::CalcCondEntropyCode);
-        //ddti::Logger << std::to_string(dim) + " "
-            //+ std::to_string(arma::accu(conts[dim]));
-
-        std::cout << "DIMENSION: " << dim << std::endl;
+        std::cout << "DIM: " << dim << std::endl;
         conts[dim].print();
-
-        // scatter by row
-        arma::Mat<unsigned int> test = scatter_matrix(conts[dim], false);
-        test.print();
-        // scatter per row (attribute value) and then reduce with sum to get conditional entropy
-        break ;
     }
-    // TODO task compute information gain
-    return nullptr;
+    // end debug
+
+    // compute information gain
+    for (auto& dim: attrs) {
+        if (dim == _dataset.labelsdim())
+            continue ;  // TODO remove labelsdims from vec attrs
+
+        if (conts[dim].n_rows < _comm.size()) {
+            // TODO
+        } else {
+            send_task(task::C4_5::CalcCondEntropyCode);
+
+            // scatter by row
+            arma::Mat<unsigned int> to_process = scatter_matrix(conts[dim], false);
+            _tasks.compute_cond_entropy(to_process);
+        }
+    }
+    return 0;
 }
 
 // TODO refactor to only compute contingencies of given list of features/attrs
