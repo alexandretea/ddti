@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-10 22:00:53
+// Modified: 2017-08-13 13:23:42
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H
@@ -14,6 +14,7 @@
 #include "task.hpp"
 #include "MpiCommunicator.hpp"
 #include "ddti.hpp"
+#include "ANode.hpp"
 
 namespace ddti {
 namespace task {
@@ -21,7 +22,10 @@ namespace task {
 class C4_5
 {
     public:
-        static const int    AttrSelectCode;
+        // task codes
+        static const int    CountContingenciesCode;
+        static const int    CalcCondEntropyCode;
+
         typedef void        (C4_5::*TaskFn)();
 
     public:
@@ -43,6 +47,32 @@ class C4_5
 
     protected:
         void        count_contingencies();
+        void        compute_cond_entropy();
+
+        template <typename T>
+        arma::Mat<T>
+        recv_scatter_mat(bool by_column = true)
+        {
+            size_t          nb_elems;
+            size_t          nb_entries;
+            T*              aux_mem;
+            arma::Mat<T>    matrix;
+
+            _comm.recv_broadcast(nb_elems, ANode::MasterRank);
+            _comm.recv_broadcast(nb_entries, ANode::MasterRank);
+
+            aux_mem = new T[nb_elems * nb_entries];
+            // expects entries to arrive contiguously // TODO or not if by row so..???
+            _comm.recv_scatter(aux_mem, nb_entries * nb_elems,
+                               utils::mpi::datatype::get<T>(),
+                               ANode::MasterRank);
+            if (by_column)
+                matrix = arma::Mat<T>(aux_mem, nb_elems, nb_entries);
+            else
+                matrix = arma::Mat<T>(aux_mem, nb_entries, nb_elems);
+            delete aux_mem;
+            return matrix;
+        }
 
     protected:
         utils::mpi::Communicator const&     _comm;

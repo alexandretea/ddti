@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiCommunicator.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 17:51:48
-// Modified: 2017-08-10 20:30:29
+// Modified: 2017-08-13 13:37:01
 
 #ifndef MPIPROCESS_H
 #define MPIPROCESS_H
@@ -102,7 +102,7 @@ class Communicator
         { broadcast(buffer, datatype::get<T>(), count, root); }
         // TODO templated scatter functions
 
-        template <typename RecvType = double>
+        template <typename RecvType>
         RecvType*
         scatter(void const* sbuf, int scount, MPI_Datatype const& stype,
                 int rcount) const

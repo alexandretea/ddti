@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-10 22:02:16
+// Modified: 2017-08-13 13:39:42
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -35,18 +35,55 @@ class C4_5
         DecisionTree*   operator()(Dataset<double> const& dataset);
 
     protected:
-        // TODO keep track of attributes? datasetinfo?
-        // TODO check signatures of the functions below
         DecisionTree*   rec_train_node(arma::subview<double> const& data,
                                        std::vector<size_t> const& attrs);
-        arma::mat       scatter_matrix(arma::subview<double> const& data);
+        void            send_task(int task_code) const;
 
         std::map<size_t, ContTable>
         count_contingencies(arma::subview<double> const& data);
 
-        static size_t
-        find_majority_class(arma::subview_row<double> const& data,
-                            bool* is_only_class = nullptr);
+
+    // scatter matrix by column or by row
+    //template <typename T>
+    //arma::Mat<T>
+    //scatter_matrix(arma::subview<T> const& data, bool by_column = true)
+    template <typename T, template<typename> class MatType = arma::Mat>
+    arma::Mat<T>
+    scatter_matrix(MatType<T> const& data, bool by_column = true)
+    {
+        MPI_Datatype    entry_type;
+        size_t         chunk_size;
+        size_t         nb_elems;
+        T*             aux_mem;
+        arma::Mat<T>   matrix;
+
+        if (by_column) {    // armadillo matrices are column-major
+            nb_elems = data.n_rows;
+            chunk_size = data.n_cols / _comm.size();
+            entry_type = _mpi_types.matrix_contiguous_entry<T>(data.n_rows);
+        } else {
+            nb_elems = data.n_cols;
+            chunk_size = data.n_rows / _comm.size();
+            entry_type = _mpi_types.matrix_noncontiguous_entry<T>(nb_elems,
+                                                                  data.n_rows);
+        }
+        // TODO check case odd number and fix nb_slaes +1
+        _comm.broadcast(nb_elems);   // nb elems
+        _comm.broadcast(chunk_size); // nb entries
+        aux_mem = _comm.scatter<T>(data.colptr(0), chunk_size, entry_type,
+                                   chunk_size * nb_elems);
+        if (by_column)
+            matrix = arma::Mat<T>(aux_mem, nb_elems, chunk_size);
+        else
+            matrix = arma::Mat<T>(aux_mem, chunk_size, nb_elems);
+        delete aux_mem;
+        return matrix;
+    }
+
+        static double
+        compute_entropy(arma::subview_row<double> const& dim,
+                        size_t* majority_class = nullptr,
+                        bool* is_only_class = nullptr);
 
     protected:
         utils::mpi::Communicator const& _comm;

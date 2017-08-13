@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-10 22:00:57
+// Modified: 2017-08-13 15:26:13
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -15,12 +15,14 @@
 namespace ddti {
 namespace task {
 
-const int    C4_5::AttrSelectCode = 42;
+const int    C4_5::CountContingenciesCode   = 42;
+const int    C4_5::CalcCondEntropyCode      = 84;
 
 C4_5::C4_5(utils::mpi::Communicator const& comm)
     : _comm(comm)
 {
-    _tasks[C4_5::AttrSelectCode] = &C4_5::count_contingencies;
+    _tasks[C4_5::CountContingenciesCode] = &C4_5::count_contingencies;
+    _tasks[C4_5::CalcCondEntropyCode] = &C4_5::compute_cond_entropy;
 }
 
 C4_5::~C4_5()
@@ -47,27 +49,16 @@ C4_5::name() const
 void
 C4_5::count_contingencies()
 {
-    size_t              nb_elems;
-    size_t              nb_entries;
     size_t              labels_dimension;
-    double*             aux_mem;
     arma::mat           matrix;
     std::vector<size_t> dim_values;
 
-    _comm.recv_broadcast(nb_elems, ANode::MasterRank);
-    _comm.recv_broadcast(nb_entries, ANode::MasterRank);
+    matrix = recv_scatter_mat<double>();
     _comm.recv_broadcast(labels_dimension, ANode::MasterRank);
 
-    aux_mem = new double[nb_elems * nb_entries];
-    // expects entries to arrive contiguously
-    _comm.recv_scatter(aux_mem, nb_entries * nb_elems,
-                       utils::mpi::datatype::get<double>(), ANode::MasterRank);
-    matrix = arma::mat(aux_mem, nb_elems, nb_entries);
-    // TODO extra copy, use constructor param to force non-copy?
-    delete aux_mem;
-    dim_values = _comm.recv_bcast_vec<size_t>(nb_elems, ANode::MasterRank);
+    dim_values = _comm.recv_bcast_vec<size_t>(matrix.n_rows, ANode::MasterRank);
     count_contingencies(matrix, labels_dimension, dim_values);
-    // usage of dim_values only work bc we are using an IncrementPolicy
+    // NOTE: usage of dim_values only work bc we are using an IncrementPolicy
 }
 
 void
@@ -102,6 +93,14 @@ C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
             }
         }
     }
+}
+
+void
+C4_5::compute_cond_entropy()
+{
+    arma::Mat<unsigned int> matrix = recv_scatter_mat<unsigned int>(false);
+
+    matrix.print();
 }
 
 }   // end of namespace task

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Dataset.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-09 14:19:43
-// Modified: 2017-08-09 17:57:40
+// Modified: 2017-08-11 02:08:07
 
 #ifndef DATASET_H
 #define DATASET_H
@@ -103,6 +103,12 @@ class Dataset
         init_mappings(::mlpack::data::DatasetInfo const& info)
         {
             _mappings = Dataset::get_mappings(info);
+        }
+
+        size_t
+        mapping_size(size_t dim) const
+        {
+            return _mappings.at(dim).size();
         }
 
         std::vector<size_t>

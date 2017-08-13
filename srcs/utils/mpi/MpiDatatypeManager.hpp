@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/mpi/MpiDatatypeManager.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-04 23:38:51
-// Modified: 2017-08-09 13:37:31
+// Modified: 2017-08-13 15:25:17
 
 #ifndef MPIDATATYPEMANAGER_H
 #define MPIDATATYPEMANAGER_H
@@ -58,15 +58,19 @@ class Manager
         // if it is row-major, the type represents a column
         template <typename T>
         MPI_Datatype const&
-        matrix_noncontiguous_entry(size_t nb_elems, size_t nb_entries)
+        matrix_noncontiguous_entry(size_t nb_elems, size_t contiguous_size)
         {
             MPI_Datatype    entry;
-            int             error_code;
+            int             err;
 
-            if ((error_code = MPI_Type_vector(nb_elems, 1, nb_entries,
-                                              datatype::get<T>(), &entry))
-                    != MPI_SUCCESS)
-                throw mpi::Exception(error_code);
+            if ((err = MPI_Type_vector(nb_elems, 1, contiguous_size,
+                            datatype::get<T>(), &entry)) != MPI_SUCCESS or
+                (err = MPI_Type_create_resized(entry, 0, sizeof(T),
+                            &entry)) != MPI_SUCCESS)
+                throw mpi::Exception(err);
+            // NOTE: The call to MPI_Type_create_resized is necessary to
+            // restrict the extent of the type, in such a way that when used
+            // with a count the extent of the whole entry is just one element
             return _datatypes[commit(entry)];
         }
 

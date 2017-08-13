@@ -4,8 +4,9 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/Communicator.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:02:13
-// Modified: 2017-08-10 19:45:02
+// Modified: 2017-08-13 14:46:22
 
+#include <iostream>
 #include "MpiCommunicator.hpp"
 #include "MpiException.hpp"
 
