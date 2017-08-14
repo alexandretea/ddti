@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-14 17:06:20
+// Modified: 2017-08-14 17:16:57
 
 #include <algorithm>
 #include <vector>
@@ -76,7 +76,7 @@ C4_5::rec_train_node(arma::subview<double> const& data,
     // TODO bufferised scatter + bufferised load of matrix
 
     size_t selected_attr = select_attribute(data, attrs, entropy);
-    // TODO task compute information gain
+    ddti::Logger << "Split on dimension: " + std::to_string(selected_attr);
     return nullptr;
 }
 
@@ -86,16 +86,12 @@ C4_5::select_attribute(arma::subview<double> const& data,
 {
     std::map<size_t, ContTable> conts = count_contingencies(data);
     // TODO refactor count_contingenceis to handle non-divisible scatter + data < nb node
-
-    // debug  conts
-    for (auto& dim: attrs) {
-        std::cout << "DIM: " << dim << std::endl;
-        conts[dim].print();
-    }
-    // end debug
+    std::pair<size_t, double>   selected_attr = std::make_pair(0, 0);
+    //        dim     info gain
 
     // compute information gain
     for (auto& dim: attrs) {
+        double  info_gain;
         double  c_entropy = 0;
         size_t  remainings = 0;
         size_t  nb_instances = arma::accu(conts[dim]);
@@ -121,6 +117,8 @@ C4_5::select_attribute(arma::subview<double> const& data,
             remainings = conts[dim].n_rows;
         }
         if (remainings > 0) {
+            // compute conditional entropy for the remaining data (that is,
+            // the data that hasn't been scattered)
             arma::subview<unsigned int> to_process =
                 conts[dim].tail_rows(remainings);
 
@@ -128,10 +126,14 @@ C4_5::select_attribute(arma::subview<double> const& data,
                 c_entropy += _tasks.compute_weighted_entropy(row, nb_instances);
             });
         }
-        std::cout << "InfoGain of dim " << dim << ": "
-            << entropy - c_entropy << std::endl;
+        info_gain = entropy - c_entropy;
+        if (selected_attr.second < info_gain) {
+            // keep track of largest information gain
+            selected_attr.first = dim;
+            selected_attr.second = info_gain;
+        }
     }
-    return 0;
+    return selected_attr.first;
 }
 
 // TODO refactor to only compute contingencies of given list of features/attrs
