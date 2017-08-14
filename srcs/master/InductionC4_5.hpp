@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-14 16:51:57
+// Modified: 2017-08-14 17:26:45
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -47,9 +47,11 @@ class C4_5
         count_contingencies(arma::subview<double> const& data);
 
         // scatter matrix by column or by row
-        template <typename T, template<typename> class MatType = arma::Mat>
+        // NOTE: we don't allow the scatter of subviews because they might
+        // not be continuous in memory
+        template <typename T>
         arma::Mat<T>
-        scatter_matrix(MatType<T> const& data, bool by_column = true)
+        scatter_matrix(arma::Mat<T> const& data, bool by_column = true)
         {
             MPI_Datatype   entry_type;
             size_t         chunk_size;
