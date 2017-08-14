@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-14 16:57:23
+// Modified: 2017-08-14 17:06:20
 
 #include <algorithm>
 #include <vector>
@@ -29,13 +29,19 @@ C4_5::~C4_5()
 DecisionTree*
 C4_5::operator()(Dataset<double> const& dataset) // TODO change to <uint> ?
 {
-    std::vector<size_t> attributes(dataset.n_rows());
+    std::vector<size_t> attributes;
     DecisionTree*       dt_root;
     int                 task_code;
 
-    std::iota(attributes.begin(), attributes.end(), 0); // build attributes vec
-    // TODO remove label dimension
-    _dataset = dataset;
+    // build attributes vector
+    attributes.reserve(dataset.n_rows());
+    for (unsigned int i = 0; i < dataset.n_rows(); ++i) {
+        if (i != dataset.labelsdim())
+            attributes.push_back(i);
+    }
+
+    _dataset = dataset; // TODO fix copy of matrix.
+
     // TODO template rec_train node to handle subviews and matrices, like in scatter_matrix()
     dt_root = rec_train_node(dataset.subview(0, 0, dataset.n_rows() - 1,
                                              dataset.n_cols() - 1),
@@ -83,8 +89,6 @@ C4_5::select_attribute(arma::subview<double> const& data,
 
     // debug  conts
     for (auto& dim: attrs) {
-        if (dim == _dataset.labelsdim())
-            continue ;  // TODO remove labelsdims from vec attrs
         std::cout << "DIM: " << dim << std::endl;
         conts[dim].print();
     }
@@ -95,9 +99,6 @@ C4_5::select_attribute(arma::subview<double> const& data,
         double  c_entropy = 0;
         size_t  remainings = 0;
         size_t  nb_instances = arma::accu(conts[dim]);
-
-        if (dim == _dataset.labelsdim())
-            continue ;  // TODO remove labelsdims from vec attrs
 
         // compute conditional entropy of dimension dim
         if (conts[dim].n_rows >= static_cast<size_t>(_comm.size())) {
@@ -144,9 +145,9 @@ C4_5::count_contingencies(arma::subview<double> const& data)
 
     send_task(task::C4_5::CountContingenciesCode);
 
-    to_process = scatter_matrix(data);  // TODO refacto scatter based on reduce design?
+    to_process = scatter_matrix(data);
     _comm.broadcast(_dataset.labelsdim());  // labels dimension
-    _comm.bcast_vec(mapping_sizes);     // nb of values by dimension
+    _comm.bcast_vec(mapping_sizes);         // nb of values by dimension
     _tasks.count_contingencies(to_process, _dataset.labelsdim(), mapping_sizes,
                                &contingencies);
     return contingencies;
