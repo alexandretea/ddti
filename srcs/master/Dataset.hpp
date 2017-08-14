@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Dataset.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-09 14:19:43
-// Modified: 2017-08-11 02:08:07
+// Modified: 2017-08-13 18:59:46
 
 #ifndef DATASET_H
 #define DATASET_H
@@ -67,6 +67,12 @@ class Dataset
                  size_t end_row, size_t end_col) const
          {
              return _matrix.submat(begin_row, begin_col, end_row, end_col);
+         }
+
+         arma::subview<T>
+         to_subview() const
+         {
+             return _matrix.submat(arma::span::all);
          }
 
         arma::Row<T> const&

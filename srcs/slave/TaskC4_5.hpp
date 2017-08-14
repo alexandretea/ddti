@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-13 16:16:22
+// Modified: 2017-08-14 16:51:05
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H
@@ -15,6 +15,7 @@
 #include "MpiCommunicator.hpp"
 #include "ddti.hpp"
 #include "ANode.hpp"
+#include "utils/matrix.hpp"
 
 namespace ddti {
 namespace task {
@@ -45,7 +46,10 @@ class C4_5
                                         std::map<size_t, ContTable>* output
                                             = nullptr) const;
         void        compute_cond_entropy(ContTable const& matrix,
+                                         size_t total_instances,
                                          double* centropy = nullptr) const;
+        double      compute_weighted_entropy(arma::Row<unsigned int> const& row,
+                                             size_t total_instances) const;
 
     protected:
         void        count_contingencies();
@@ -58,7 +62,6 @@ class C4_5
             size_t          nb_elems;
             size_t          nb_entries;
             T*              aux_mem;
-            arma::Mat<T>    matrix;
 
             _comm.recv_broadcast(nb_elems, ANode::MasterRank);
             _comm.recv_broadcast(nb_entries, ANode::MasterRank);
@@ -67,12 +70,8 @@ class C4_5
             _comm.recv_scatter(aux_mem, nb_entries * nb_elems,
                                utils::mpi::datatype::get<T>(),
                                ANode::MasterRank);
-            if (by_column)
-                matrix = arma::Mat<T>(aux_mem, nb_elems, nb_entries);
-            else
-                matrix = arma::Mat<T>(aux_mem, nb_entries, nb_elems);
-            delete aux_mem;
-            return matrix;
+            return utils::matrix::load_arma_matrix(aux_mem, nb_elems,
+                                                   nb_entries, by_column);
         }
 
     protected:

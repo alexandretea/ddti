@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-13 16:15:57
+// Modified: 2017-08-14 16:54:35
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -98,16 +98,48 @@ C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
 void
 C4_5::compute_cond_entropy()
 {
-    ContTable matrix = recv_scatter_mat<unsigned int>(false); // receives rows
+    ContTable   matrix = recv_scatter_mat<unsigned int>(false); // receives rows
+    size_t      nb_instances;
 
-    compute_cond_entropy(matrix);
+    _comm.recv_broadcast(nb_instances, ANode::MasterRank);
+    compute_cond_entropy(matrix, nb_instances);
 }
 
 void
-C4_5::compute_cond_entropy(ContTable const& matrix, double* centropy) const
+C4_5::compute_cond_entropy(ContTable const& matrix, size_t total_instances,
+                           double* output) const
 {
-    matrix.print();
-    // TODO reduce with sum to get conditional entropy
+    double  c_entropy = 0;
+    double* reduced_ce;
+
+    matrix.each_row([this, &c_entropy, total_instances](auto& row) {
+        c_entropy += compute_weighted_entropy(row, total_instances);
+    });
+    reduced_ce = _comm.reduce(&c_entropy, 1, MPI_SUM, ANode::MasterRank);
+    if (output != nullptr and reduced_ce != nullptr) {
+        // should only happen on master node
+        *output = *reduced_ce;
+        delete reduced_ce;
+    }
+}
+
+// weighted entropy of a row
+double
+C4_5::compute_weighted_entropy(arma::Row<unsigned int> const& row,
+                               size_t total_instances) const
+{
+    unsigned int    total_row = arma::accu(row);
+    double          w_entropy = 0;
+
+    for (unsigned int v: row) {
+        double prob = (static_cast<double>(v) / total_row);
+
+        if (prob != 0)
+            w_entropy += (prob * std::log2(prob));
+    }
+    w_entropy *= -1;
+    w_entropy *= static_cast<double>(total_row) / total_instances;
+    return w_entropy;
 }
 
 }   // end of namespace task

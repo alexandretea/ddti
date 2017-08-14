@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-13 17:30:45
+// Modified: 2017-08-14 16:51:57
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -17,6 +17,7 @@
 #include "TaskC4_5.hpp"
 #include "Dataset.hpp"
 #include "ddti.hpp"
+#include "utils/matrix.hpp"
 
 namespace ddti {
 namespace induction {
@@ -54,7 +55,6 @@ class C4_5
             size_t         chunk_size;
             size_t         nb_elems;
             T*             aux_mem;
-            arma::Mat<T>   matrix;
 
             if (by_column) {    // armadillo matrices are column-major
                 nb_elems = data.n_rows;
@@ -72,12 +72,8 @@ class C4_5
             _comm.broadcast(chunk_size); // nb entries
             aux_mem = _comm.scatter<T>(data.colptr(0), chunk_size, entry_type,
                                        chunk_size * nb_elems);
-            if (by_column)
-                matrix = arma::Mat<T>(aux_mem, nb_elems, chunk_size);
-            else
-                matrix = arma::Mat<T>(aux_mem, chunk_size, nb_elems);
-            delete aux_mem;
-            return matrix;
+            return utils::matrix::load_arma_matrix(aux_mem, nb_elems,
+                                                   chunk_size, by_column);
         }
 
         static double

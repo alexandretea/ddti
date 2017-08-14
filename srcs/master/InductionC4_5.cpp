@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-13 17:40:27
+// Modified: 2017-08-14 16:57:23
 
 #include <algorithm>
 #include <vector>
@@ -79,6 +79,7 @@ C4_5::select_attribute(arma::subview<double> const& data,
                        std::vector<size_t> const& attrs, double entropy)
 {
     std::map<size_t, ContTable> conts = count_contingencies(data);
+    // TODO refactor count_contingenceis to handle non-divisible scatter + data < nb node
 
     // debug  conts
     for (auto& dim: attrs) {
@@ -91,18 +92,43 @@ C4_5::select_attribute(arma::subview<double> const& data,
 
     // compute information gain
     for (auto& dim: attrs) {
+        double  c_entropy = 0;
+        size_t  remainings = 0;
+        size_t  nb_instances = arma::accu(conts[dim]);
+
         if (dim == _dataset.labelsdim())
             continue ;  // TODO remove labelsdims from vec attrs
 
-        if (conts[dim].n_rows < _comm.size()) {
-            // TODO
-        } else {
+        // compute conditional entropy of dimension dim
+        if (conts[dim].n_rows >= static_cast<size_t>(_comm.size())) {
+            remainings = conts[dim].n_rows % _comm.size();
+
             send_task(task::C4_5::CalcCondEntropyCode);
 
             // scatter by row
-            arma::Mat<unsigned int> to_process = scatter_matrix(conts[dim], false);
-            _tasks.compute_cond_entropy(to_process);
+            ContTable to_process = scatter_matrix<unsigned int, arma::Mat>(
+                (remainings > 0
+                    ? conts[dim].head_rows(conts[dim].n_rows - remainings)
+                    : conts[dim]),
+                false
+            );  // we specify the template argument arma::Mat because
+                // head_rows() would return a subview with non-continuous data
+
+            _comm.broadcast(nb_instances);
+            _tasks.compute_cond_entropy(to_process, nb_instances, &c_entropy);
+        } else {    // can't scatter if nb of processors > data
+            remainings = conts[dim].n_rows;
         }
+        if (remainings > 0) {
+            arma::subview<unsigned int> to_process =
+                conts[dim].tail_rows(remainings);
+
+            to_process.each_row([this, &c_entropy, nb_instances](auto& row) {
+                c_entropy += _tasks.compute_weighted_entropy(row, nb_instances);
+            });
+        }
+        std::cout << "InfoGain of dim " << dim << ": "
+            << entropy - c_entropy << std::endl;
     }
     return 0;
 }
@@ -159,8 +185,7 @@ C4_5::compute_entropy(arma::subview_row<double> const& dim,
 
     // compute entropy
     for (auto& count: counts) {
-        double prob = static_cast<double>(count.second)
-                      / static_cast<double>(dim.n_elem);
+        double prob = static_cast<double>(count.second) / dim.n_elem;
 
         if (prob != 0)
             entropy += prob * std::log2(prob);
