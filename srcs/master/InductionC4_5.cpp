@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-14 17:29:58
+// Modified: 2017-08-15 19:10:59
 
 #include <algorithm>
 #include <vector>
@@ -58,12 +58,13 @@ C4_5::send_task(int task_code) const
 }
 
 DecisionTree*
-C4_5::rec_train_node(arma::subview<double> const& data,
+C4_5::rec_train_node(arma::Mat<double> const& data,
                      std::vector<size_t> const& attrs)
 {
-    double  entropy;
-    size_t  majority_class;
-    bool    is_only_class;
+    DecisionTree*   node;
+    double          entropy;
+    size_t          majority_class;
+    bool            is_only_class;
 
     if (data.n_cols == 0)
         throw std::runtime_error("Not enough data");
@@ -77,11 +78,27 @@ C4_5::rec_train_node(arma::subview<double> const& data,
 
     size_t selected_attr = select_attribute(data, attrs, entropy);
     ddti::Logger << "Split on dimension: " + std::to_string(selected_attr);
+
     return nullptr;
+    // create new nodes
+    std::vector<std::vector<unsigned long long>>    cols_by_vals(
+            _dataset.mapping_size(selected_attr));
+    std::vector<size_t>                 split_attrs = attrs;
+
+    split_attrs.erase(std::remove(split_attrs.begin(), split_attrs.end(),
+                                  selected_attr), split_attrs.end());
+    node = new DecisionTree(selected_attr);
+    for (size_t col_i = 0; col_i < data.n_cols; ++col_i) {
+        cols_by_vals[data(selected_attr, col_i)].push_back(col_i);
+    }
+    for (auto const& cols: cols_by_vals) {
+        node->add_child(rec_train_node(_dataset.subview(cols), split_attrs)); // TODO copy of cols
+    }
+    return node;
 }
 
 size_t
-C4_5::select_attribute(arma::subview<double> const& data,
+C4_5::select_attribute(arma::Mat<double> const& data,
                        std::vector<size_t> const& attrs, double entropy)
 {
     std::map<size_t, ContTable> conts = count_contingencies(data);
@@ -138,7 +155,7 @@ C4_5::select_attribute(arma::subview<double> const& data,
 
 // TODO refactor to only compute contingencies of given list of features/attrs
 std::map<size_t, ContTable>
-C4_5::count_contingencies(arma::subview<double> const& data)
+C4_5::count_contingencies(arma::Mat<double> const& data)
 {
     static std::vector<size_t>  mapping_sizes = _dataset.mapping_sizes();
 

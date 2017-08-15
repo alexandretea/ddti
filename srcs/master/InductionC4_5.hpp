@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-14 17:26:45
+// Modified: 2017-08-15 19:01:47
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -36,15 +36,15 @@ class C4_5
         DecisionTree*   operator()(Dataset<double> const& dataset);
 
     protected:
-        DecisionTree*   rec_train_node(arma::subview<double> const& data,
+        DecisionTree*   rec_train_node(arma::Mat<double> const& data,
                                        std::vector<size_t> const& attrs);
         void            send_task(int task_code) const;
-        size_t          select_attribute(arma::subview<double> const& data,
+        size_t          select_attribute(arma::Mat<double> const& data,
                                          std::vector<size_t> const& attrs,
                                          double entropy);
 
         std::map<size_t, ContTable>
-        count_contingencies(arma::subview<double> const& data);
+        count_contingencies(arma::Mat<double> const& data);
 
         // scatter matrix by column or by row
         // NOTE: we don't allow the scatter of subviews because they might

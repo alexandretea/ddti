@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Dataset.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-09 14:19:43
-// Modified: 2017-08-13 18:59:46
+// Modified: 2017-08-15 19:09:17
 
 #ifndef DATASET_H
 #define DATASET_H
@@ -20,6 +20,8 @@ class Dataset
 {
     public:
         using Mappings = std::vector<std::unordered_map<size_t, std::string>>;
+        using SubviewNC = arma::subview_elem2<T, arma::Mat<unsigned long long>,
+                                              arma::Mat<unsigned long long>>;
 
     public:
         Dataset() : _matrix(), _mappings() {}
@@ -62,18 +64,18 @@ class Dataset
             return _matrix.n_cols;
         }
 
-         arma::subview<T>
-         subview(size_t begin_row, size_t begin_col,
-                 size_t end_row, size_t end_col) const
-         {
-             return _matrix.submat(begin_row, begin_col, end_row, end_col);
-         }
+        arma::subview<T>
+        subview(size_t begin_row, size_t begin_col,
+                size_t end_row, size_t end_col) const
+        {
+            return _matrix.submat(begin_row, begin_col, end_row, end_col);
+        }
 
-         arma::subview<T>
-         to_subview() const
-         {
-             return _matrix.submat(arma::span::all);
-         }
+        Dataset<T>::SubviewNC
+        subview(std::vector<unsigned long long> const& cols)
+        {
+            return _matrix.cols(arma::uvec(cols));
+        }
 
         arma::Row<T> const&
         row(size_t row) const

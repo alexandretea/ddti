@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 18:23:20
-// Modified: 2017-08-04 14:10:54
+// Modified: 2017-08-15 13:55:07
 
 #include "DecisionTree.hpp"
 
@@ -41,6 +41,12 @@ DecisionTree::operator=(DecisionTree const& o)
         _children = o._children;
     }
     return *this;
+}
+
+void
+DecisionTree::add_child(DecisionTree* node)
+{
+    _children.push_back(node);
 }
 
 }   // end of namespace ddti

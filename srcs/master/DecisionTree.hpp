@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 17:49:15
-// Modified: 2017-08-04 14:10:49
+// Modified: 2017-08-15 13:54:38
 
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
@@ -24,6 +24,8 @@ class DecisionTree
         DecisionTree(DecisionTree const& other);
         DecisionTree&   operator=(DecisionTree const& other);
         // TODO need to keep track of subset of data
+
+        void            add_child(DecisionTree* node);
 
     protected:
         bool                        _is_leaf;
