@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-15 19:01:47
+// Modified: 2017-08-17 13:58:19
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -37,11 +37,16 @@ class C4_5
 
     protected:
         DecisionTree*   rec_train_node(arma::Mat<double> const& data,
-                                       std::vector<size_t> const& attrs);
+                                       std::vector<size_t> const& attrs,
+                                       int split_value = -1);
         void            send_task(int task_code) const;
         size_t          select_attribute(arma::Mat<double> const& data,
                                          std::vector<size_t> const& attrs,
                                          double entropy);
+        void            build_children_nodes(DecisionTree* node,
+                                             arma::Mat<double> const& node_data,
+                                             std::vector<size_t> const& nodeatt,
+                                             size_t attr_split);
 
         std::map<size_t, ContTable>
         count_contingencies(arma::Mat<double> const& data);

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-14 16:54:35
+// Modified: 2017-08-16 15:59:57
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -35,9 +35,7 @@ C4_5::operator()(int task_code)
     if (_tasks.find(task_code) == _tasks.end())
         throw std::runtime_error("Cannot find task: "
                                  + std::to_string(task_code));
-    ddti::Logger << "Execute task: " + std::to_string(task_code);
     (this->*_tasks[task_code])();
-    ddti::Logger << "Task completed: " + std::to_string(task_code);
 }
 
 std::string
@@ -66,9 +64,6 @@ C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
                           std::vector<size_t> const& dim_values,
                           std::map<size_t, ContTable>* output) const
 {
-    ddti::Logger << "Received matrix (" + std::to_string(data.n_cols) + "*"
-                    + std::to_string(data.n_rows) + ")";
-
     for (unsigned int dim = 0; dim < data.n_rows; ++dim) {
         if (dim != labels_dim) {
 

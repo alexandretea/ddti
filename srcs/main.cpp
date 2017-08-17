@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/main_load.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-25 11:11:44
-// Modified: 2017-08-06 20:11:34
+// Modified: 2017-08-17 17:18:31
 
 #include <iostream>
 #include <mlpack/core.hpp>
@@ -20,6 +20,7 @@ PROGRAM_INFO("TODO", "TODO");   // TODO
 static const char* PARAM_TRAINING_SET       = "training_set";
 static const char* PARAM_TEST_SET           = "test_set";
 static const char* PARAM_LABELS_DIMENSION   = "labels_column";
+static const char* PARAM_ATTRIBUTES         = "attributes";
 
 // Program parameters
 PARAM_STRING_IN_REQ(PARAM_TRAINING_SET, "Path to the training dataset.", "i");
@@ -29,6 +30,9 @@ PARAM_INT_IN(PARAM_LABELS_DIMENSION,
              "Index of the column containing the labels to predict "
              "(must be between 0 and N-1). If unspecified, the algorithm will "
              "use the last column of the dataset.", "l", -1);
+PARAM_VECTOR_IN(std::string, PARAM_ATTRIBUTES,
+                "List of attribute names, separated by spaces "
+                "(e.g. -a name lastname age).", "a");
 
 int
 main(int ac, char** av)
@@ -41,11 +45,14 @@ main(int ac, char** av)
 
         // Master node
         if (comm.rank() == ddti::ANode::MasterRank) {
+            using namespace mlpack;
+
             ddti::MasterNode<ddti::induction::C4_5>    master(
                     comm,
-                    mlpack::CLI::GetParam<std::string>(PARAM_TRAINING_SET),
-                    mlpack::CLI::GetParam<int>(PARAM_LABELS_DIMENSION),
-                    mlpack::CLI::GetParam<std::string>(PARAM_TEST_SET)
+                    CLI::GetParam<std::string>(PARAM_TRAINING_SET),
+                    CLI::GetParam<int>(PARAM_LABELS_DIMENSION),
+                    CLI::GetParam<std::vector<std::string>>(PARAM_ATTRIBUTES),
+                    CLI::GetParam<std::string>(PARAM_TEST_SET)
             );
 
             ddti::Logger.set_id(master.name());

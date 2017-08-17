@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Dataset.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-09 14:19:43
-// Modified: 2017-08-15 19:09:17
+// Modified: 2017-08-17 17:15:58
 
 #ifndef DATASET_H
 #define DATASET_H
@@ -15,30 +15,44 @@
 
 namespace ddti {
 
-template <typename T>
+using DatasetMappings = std::vector<std::unordered_map<size_t, std::string>>;
+
+template <typename T = unsigned int>
 class Dataset
 {
     public:
-        using Mappings = std::vector<std::unordered_map<size_t, std::string>>;
         using SubviewNC = arma::subview_elem2<T, arma::Mat<unsigned long long>,
                                               arma::Mat<unsigned long long>>;
 
     public:
-        Dataset() : _matrix(), _mappings() {}
+        Dataset() {}
         ~Dataset() {}
 
         Dataset(arma::Mat<T> const& mat, ssize_t labelsdim = -1,
+                std::vector<std::string> const& attr_names = {},
                 ::mlpack::data::DatasetInfo const* info = nullptr)
-            : _matrix(mat), _mappings()
+            : _matrix(mat), _attr_names(attr_names), _mappings()
         {
+            // set label dimension to the last dimension if none provided
             _labels_dimension = (labelsdim == -1 ? mat.n_rows - 1 : labelsdim);
+
+            // load mappings from DatasetInfo if provided
             if (info != nullptr)
                 init_mappings(*info);
+
+            // set attribute names if none provided
+            if (_attr_names.empty()) {
+                _attr_names.reserve(_matrix.n_rows);
+                for (unsigned int i = 0; i < _matrix.n_rows; ++i) {
+                    _attr_names.push_back("attr(" + std::to_string(i) + ")");
+                }
+            }
         }
 
         Dataset(Dataset const& o)
             : _matrix(o._matrix), _mappings(o._mappings),
-              _labels_dimension(o._labels_dimension) {}
+              _labels_dimension(o._labels_dimension),
+              _attr_names(o._attr_names) {}
 
         Dataset&
         operator=(Dataset const& o)
@@ -47,6 +61,7 @@ class Dataset
                 _matrix = o._matrix;
                 _mappings = o._mappings;
                 _labels_dimension = o._labels_dimension;
+                _attr_names = o._attr_names;
             }
             return *this;
         }
@@ -71,10 +86,17 @@ class Dataset
             return _matrix.submat(begin_row, begin_col, end_row, end_col);
         }
 
-        Dataset<T>::SubviewNC
-        subview(std::vector<unsigned long long> const& cols)
+        // NOTE: to use instead of non-contiguous subviews as
+        // arma::subview_elem2::extract segfaults
+        arma::Mat<T>
+        submat(std::vector<size_t> const& cols)
         {
-            return _matrix.cols(arma::uvec(cols));
+            arma::Mat<T>    m(_matrix.n_rows, cols.size());
+
+            for (unsigned int i = 0; i < cols.size(); ++i) {
+                m.col(i) = _matrix.col(cols[i]);
+            }
+            return m;
         }
 
         arma::Row<T> const&
@@ -130,6 +152,24 @@ class Dataset
             return mapping_sizes;
         }
 
+        DatasetMappings const&
+        mappings() const
+        {
+            return _mappings;
+        }
+
+        std::string const&
+        mapping(size_t attribute, size_t value) const
+        {
+            return _mappings.at(attribute).at(value);
+        }
+
+        std::string const&
+        attribute_name(size_t dim) const
+        {
+            return _attr_names.at(dim);
+        }
+
         void
         debug_mappings(std::ostream& os = std::cout) const
         {
@@ -181,7 +221,7 @@ class Dataset
 
         template <typename EntryType>   // to use with Col<T> or Row<T>
         static std::string
-        dump_entry(EntryType const& entry, Mappings const& mappings,
+        dump_entry(EntryType const& entry, DatasetMappings const& mappings,
                    std::string const& sep = ",")
         {
             std::string res;
@@ -201,10 +241,10 @@ class Dataset
 
         // DatasetInfo is received as a copy bc DatasetInfo::UnmapString
         // is not const...
-        static Dataset::Mappings
+        static DatasetMappings
         get_mappings(::mlpack::data::DatasetInfo /* const& */ info)
         {
-            Mappings mappings(info.Dimensionality());
+            DatasetMappings mappings(info.Dimensionality());
 
             for (size_t dim = 0; dim < info.Dimensionality(); ++dim) {
                 for (size_t value = 0; value < info.NumMappings(dim); ++value) {
@@ -215,9 +255,10 @@ class Dataset
         }
 
     protected:
-        arma::Mat<T>    _matrix;
-        Mappings        _mappings;
-        size_t          _labels_dimension;
+        arma::Mat<T>                _matrix;
+        std::vector<std::string>    _attr_names;
+        DatasetMappings             _mappings;
+        size_t                      _labels_dimension;
 };
 
 }
