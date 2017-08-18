@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-18 13:57:50
+// Modified: 2017-08-18 17:54:57
 
 #include <algorithm>
 #include <vector>
@@ -101,12 +101,14 @@ C4_5::create_leaf(size_t label, int split_value, size_t nb_instances) const
 
 void
 C4_5::build_children_nodes(DecisionTree* node,
-                          arma::Mat<double> const& node_data,
-                          std::vector<size_t> const& node_attrs,
-                          size_t attr_split)
+                           arma::Mat<double> const& node_data,
+                           std::vector<size_t> const& node_attrs,
+                           size_t attr_split)
 {
-    std::vector<size_t>                 split_attrs = node_attrs;
-    std::vector<std::vector<size_t>>    cols_by_vals(
+    using ull_t = unsigned long long;
+
+    std::vector<size_t>             split_attrs = node_attrs;
+    std::vector<std::vector<ull_t>> cols_by_vals(
             _dataset.mapping_size(attr_split));
 
     // remove the selected attribute from the attribute list
@@ -122,11 +124,13 @@ C4_5::build_children_nodes(DecisionTree* node,
     // create and train child node
     for (unsigned int split_value = 0; split_value < cols_by_vals.size();
          ++split_value) {
-        std::vector<size_t> const& instances = cols_by_vals[split_value];
+        std::vector<ull_t> const& instances = cols_by_vals[split_value];
 
         if (not instances.empty()) {
-            node->add_child(rec_train_node(_dataset.submat(instances),
-                                           split_attrs, split_value));
+            node->add_child(rec_train_node(
+                                node_data.cols(arma::uvec(instances)),
+                                split_attrs, split_value
+                            ));
         }
     }
 }

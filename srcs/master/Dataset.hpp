@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Dataset.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-09 14:19:43
-// Modified: 2017-08-17 17:15:58
+// Modified: 2017-08-18 17:56:46
 
 #ifndef DATASET_H
 #define DATASET_H
@@ -86,19 +86,6 @@ class Dataset
             return _matrix.submat(begin_row, begin_col, end_row, end_col);
         }
 
-        // NOTE: to use instead of non-contiguous subviews as
-        // arma::subview_elem2::extract segfaults
-        arma::Mat<T>
-        submat(std::vector<size_t> const& cols)
-        {
-            arma::Mat<T>    m(_matrix.n_rows, cols.size());
-
-            for (unsigned int i = 0; i < cols.size(); ++i) {
-                m.col(i) = _matrix.col(cols[i]);
-            }
-            return m;
-        }
-
         arma::Row<T> const&
         row(size_t row) const
         {
@@ -174,7 +161,7 @@ class Dataset
         debug_mappings(std::ostream& os = std::cout) const
         {
             for (unsigned int dim = 0; dim < _mappings.size(); ++dim) {
-                os << dim << ": ";
+                os << _attr_names[dim] << ": ";
                 for (auto& mapping: _mappings[dim]) {
                     os << mapping.second << "(" << mapping.first << ") ";
                 }

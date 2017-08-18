@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-18 13:44:38
+// Modified: 2017-08-18 16:54:17
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -66,7 +66,6 @@ C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
 {
     for (unsigned int dim = 0; dim < data.n_rows; ++dim) {
         if (dim != labels_dim) {
-
             ContTable       local_ct(dim_values[dim], dim_values[labels_dim],
                                      arma::fill::zeros);
             unsigned int*   reduced_ct(nullptr);
@@ -76,6 +75,7 @@ C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
                 local_ct(data(dim, i), data(labels_dim, i)) += 1;
                 //       curr dim val  label dim value
             }
+
             // reduce local contingency table
             reduced_ct = _comm.reduce(local_ct.memptr(), local_ct.n_elem,
                                       MPI_SUM, ANode::MasterRank);
