@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-14 16:51:05
+// Modified: 2017-08-18 13:39:27
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H
@@ -25,7 +25,7 @@ class C4_5
     public:
         // task codes
         static const int    CountContingenciesCode;
-        static const int    CalcCondEntropyCode;
+        static const int    CompEntropiesCode;
 
         typedef void        (C4_5::*TaskFn)();
 
@@ -45,15 +45,23 @@ class C4_5
                                         std::vector<size_t> const& dim_values,
                                         std::map<size_t, ContTable>* output
                                             = nullptr) const;
-        void        compute_cond_entropy(ContTable const& matrix,
-                                         size_t total_instances,
-                                         double* centropy = nullptr) const;
+        void        comp_condnsplit_entropies(ContTable const& matrix,
+                                              size_t total_instances,
+                                              double* cond_e = nullptr,
+                                              double* split_e = nullptr) const;
+        void        comp_matrix_entropies(ContTable const& matrix,
+                                          size_t total_instances,
+                                          double& cond_e,
+                                          double& split_e) const;
         double      compute_weighted_entropy(arma::Row<unsigned int> const& row,
+                                             unsigned int total_row,
                                              size_t total_instances) const;
+        double      compute_split_entropy(unsigned int total_row,
+                                          size_t total_instances) const;
 
     protected:
         void        count_contingencies();
-        void        compute_cond_entropy();
+        void        comp_condnsplit_entropies();
 
         template <typename T>
         arma::Mat<T>

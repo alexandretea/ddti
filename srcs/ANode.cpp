@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DdtiANode.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 19:00:51
-// Modified: 2017-08-02 18:09:05
+// Modified: 2017-08-17 20:24:38
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "ANode.hpp"
@@ -17,7 +17,7 @@ namespace ddti {
 const int    ANode::MasterRank = 0;
 
 ANode::ANode(utils::mpi::Communicator const& comm)
-    : _communicator(comm), _name()
+    : _comm(comm), _name()
 {
 	std::stringstream	ss;
 
@@ -33,7 +33,7 @@ ANode::~ANode()
 size_t
 ANode::id() const
 {
-    return _communicator.rank();
+    return _comm.rank();
 }
 
 size_t
@@ -41,7 +41,7 @@ ANode::nb_slaves() const
 {
     // NOTE: if shadowing masters in future improvements, this will have to be
     // changed
-    return _communicator.size() - 1;
+    return _comm.size() - 1;
 }
 
 bool

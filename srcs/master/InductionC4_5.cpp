@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-17 17:14:33
+// Modified: 2017-08-18 13:57:50
 
 #include <algorithm>
 #include <vector>
@@ -46,7 +46,7 @@ C4_5::operator()(Dataset<double> const& dataset) // TODO change to <uint> ?
                                              dataset.n_cols() - 1),
                              attributes);
     send_task(task::End);
-    dt_root->print(_dataset);
+    dt_root->print(dataset); // TODO remove debug
     // TODO end of induction? although pruning
     return dt_root;
 }
@@ -66,24 +66,37 @@ C4_5::rec_train_node(arma::Mat<double> const& data,
     size_t          majority_class;
     bool            is_only_class;
     DecisionTree*   node;
-    size_t          selected_attr;
 
     if (data.n_cols == 0)
         throw std::runtime_error("Not enough data");
     entropy = C4_5::compute_entropy(data.row(_dataset.labelsdim()),
                                     &majority_class, &is_only_class);
     if (is_only_class or attrs.empty()) {   // TODO min nb instances?
-        ddti::Logger << "Create leaf with class "
-                        + std::to_string(majority_class);
-        return new DecisionTree(majority_class, split_value, true); // leaf
+        return create_leaf(majority_class, split_value, data.n_cols);
     }
     // TODO bufferised scatter + bufferised load of matrix
-    selected_attr = select_attribute(data, attrs, entropy);
-    ddti::Logger << "Create node with feature " + std::to_string(selected_attr);
+    std::pair<size_t, double>   attr = select_attribute(data, attrs, entropy);
+    if (attr.second < 0.05) {   // base case: no information gain
+        return create_leaf(majority_class, split_value, data.n_cols);
+    }
 
-    node = new DecisionTree(selected_attr, split_value);
-    build_children_nodes(node, data, attrs, selected_attr);
+    ddti::Logger << "Create node with attribute `"
+                    + _dataset.attribute_name(attr.first) + "` ("
+                    + std::to_string(data.n_cols) +  "; IGR: "
+                    + std::to_string(attr.second) + ")";
+
+    node = new DecisionTree(attr.first, split_value);
+    build_children_nodes(node, data, attrs, attr.first);
     return node;
+}
+
+DecisionTree*
+C4_5::create_leaf(size_t label, int split_value, size_t nb_instances) const
+{
+    ddti::Logger << "Create leaf with class `"
+        + _dataset.mapping(_dataset.labelsdim(), label)
+        + "` (" + std::to_string(nb_instances) + ")";
+    return new DecisionTree(label, split_value, true);
 }
 
 void
@@ -118,19 +131,21 @@ C4_5::build_children_nodes(DecisionTree* node,
     }
 }
 
-size_t
+std::pair<size_t, double>
 C4_5::select_attribute(arma::Mat<double> const& data,
                        std::vector<size_t> const& attrs, double entropy)
 {
     std::map<size_t, ContTable> conts = count_contingencies(data);
-    // TODO refactor count_contingenceis to handle non-divisible scatter + data < nb node
+    // TODO refactor count_contingenceis to handle non-divisible scatter
+    // + data < nb node
     std::pair<size_t, double>   selected_attr = std::make_pair(0, 0);
     //        dim     info gain
 
-    // compute information gain
+    // compute information gain ratio
     for (auto& dim: attrs) {
-        double  info_gain;
-        double  c_entropy = 0;
+        double  info_gain_ratio;
+        double  cond_e = 0;
+        double  split_e = 0;
         size_t  remainings = 0;
         size_t  nb_instances = arma::accu(conts[dim]);
 
@@ -138,7 +153,7 @@ C4_5::select_attribute(arma::Mat<double> const& data,
         if (conts[dim].n_rows >= static_cast<size_t>(_comm.size())) {
             remainings = conts[dim].n_rows % _comm.size();
 
-            send_task(task::C4_5::CalcCondEntropyCode);
+            send_task(task::C4_5::CompEntropiesCode);
 
             // scatter by row
             ContTable to_process = scatter_matrix<unsigned int>(
@@ -150,28 +165,32 @@ C4_5::select_attribute(arma::Mat<double> const& data,
                 // head_rows() would return a subview with non-continuous data
 
             _comm.broadcast(nb_instances);
-            _tasks.compute_cond_entropy(to_process, nb_instances, &c_entropy);
+            _tasks.comp_condnsplit_entropies(to_process, nb_instances, &cond_e,
+                                             &split_e);
         } else {    // can't scatter if nb of processors > data
             remainings = conts[dim].n_rows;
         }
         if (remainings > 0) {
-            // compute conditional entropy for the remaining data (that is,
-            // the data that hasn't been scattered)
+            // compute entropies for the remaining data
+            // (that is, the data that hasn't been scattered)
             arma::subview<unsigned int> to_process =
                 conts[dim].tail_rows(remainings);
 
-            to_process.each_row([this, &c_entropy, nb_instances](auto& row) {
-                c_entropy += _tasks.compute_weighted_entropy(row, nb_instances);
-            });
+            _tasks.comp_matrix_entropies(to_process, nb_instances,
+                                         cond_e, split_e);
         }
-        info_gain = entropy - c_entropy;
-        if (selected_attr.second < info_gain) {
+        info_gain_ratio = entropy - cond_e; // information gain
+        if (split_e > 0)
+            info_gain_ratio /= split_e;     // information gain ratio
+        ddti::Logger << "IGR(" + _dataset.attribute_name(dim) + ") = "
+                        + std::to_string(info_gain_ratio);
+        if (selected_attr.second < info_gain_ratio) {
             // keep track of largest information gain
             selected_attr.first = dim;
-            selected_attr.second = info_gain;
+            selected_attr.second = info_gain_ratio;
         }
     }
-    return selected_attr.first;
+    return selected_attr;
 }
 
 // TODO refactor to only compute contingencies of given list of features/attrs
@@ -221,8 +240,9 @@ C4_5::compute_entropy(arma::subview_row<double> const& dim,
 
         *majority_class = it->first;
     }
-    if (is_only_class != nullptr)
-        *is_only_class = (counts.size() == 1);
+    if (is_only_class != nullptr) {
+        *is_only_class = (counts.size() <= 1);
+    }
 
     // compute entropy
     for (auto& label_cnt: counts) {

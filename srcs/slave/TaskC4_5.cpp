@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-16 15:59:57
+// Modified: 2017-08-18 13:44:38
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -16,13 +16,13 @@ namespace ddti {
 namespace task {
 
 const int    C4_5::CountContingenciesCode   = 42;
-const int    C4_5::CalcCondEntropyCode      = 84;
+const int    C4_5::CompEntropiesCode        = 84;
 
 C4_5::C4_5(utils::mpi::Communicator const& comm)
     : _comm(comm)
 {
     _tasks[C4_5::CountContingenciesCode] = &C4_5::count_contingencies;
-    _tasks[C4_5::CalcCondEntropyCode] = &C4_5::compute_cond_entropy;
+    _tasks[C4_5::CompEntropiesCode] = &C4_5::comp_condnsplit_entropies;
 }
 
 C4_5::~C4_5()
@@ -90,42 +90,64 @@ C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
     }
 }
 
+// Task: Compute conditional and split entropies
 void
-C4_5::compute_cond_entropy()
+C4_5::comp_condnsplit_entropies()
 {
     ContTable   matrix = recv_scatter_mat<unsigned int>(false); // receives rows
     size_t      nb_instances;
 
     _comm.recv_broadcast(nb_instances, ANode::MasterRank);
-    compute_cond_entropy(matrix, nb_instances);
+    comp_condnsplit_entropies(matrix, nb_instances);
+}
+
+// TODO refacto to compute cond entropy AND split entropy
+void
+C4_5::comp_condnsplit_entropies(ContTable const& matrix, size_t total_instances,
+                                double* out_cond_e, double* out_split_e) const
+{
+    double  entropies[2];   // 0: conditional entropy, 1: split entropy
+    double* reduced_ent;
+
+    comp_matrix_entropies(matrix, total_instances, entropies[0], entropies[1]);
+
+    reduced_ent = _comm.reduce(entropies, 2, MPI_SUM, ANode::MasterRank);
+    if (out_cond_e != nullptr and out_split_e != nullptr
+        and reduced_ent != nullptr) {
+        // should only happen on master node
+
+        *out_cond_e = reduced_ent[0];    // conditional entropy
+        *out_split_e = reduced_ent[1];   // split entropy
+    }
+    if (reduced_ent != nullptr)
+        delete reduced_ent;
 }
 
 void
-C4_5::compute_cond_entropy(ContTable const& matrix, size_t total_instances,
-                           double* output) const
+C4_5::comp_matrix_entropies(ContTable const& matrix, size_t total_instances,
+                            double& cond_e, double& split_e) const
 {
-    double  c_entropy = 0;
-    double* reduced_ce;
+    matrix.each_row([this, &cond_e, &split_e, total_instances](auto& row) {
+        unsigned int    total_row = arma::accu(row);
 
-    matrix.each_row([this, &c_entropy, total_instances](auto& row) {
-        c_entropy += compute_weighted_entropy(row, total_instances);
+        if (total_row > 0) {
+            cond_e += compute_weighted_entropy(row, total_row,
+                                                     total_instances);
+            split_e += compute_split_entropy(total_row, total_instances);
+        }
     });
-    reduced_ce = _comm.reduce(&c_entropy, 1, MPI_SUM, ANode::MasterRank);
-    if (output != nullptr and reduced_ce != nullptr) {
-        // should only happen on master node
-        *output = *reduced_ce;
-        delete reduced_ce;
-    }
 }
 
 // weighted entropy of a row
 double
 C4_5::compute_weighted_entropy(arma::Row<unsigned int> const& row,
+                               unsigned int total_row,
                                size_t total_instances) const
 {
-    unsigned int    total_row = arma::accu(row);
     double          w_entropy = 0;
 
+    if (total_row == 0)
+        return 0;
     for (unsigned int v: row) {
         double prob = (static_cast<double>(v) / total_row);
 
@@ -135,6 +157,18 @@ C4_5::compute_weighted_entropy(arma::Row<unsigned int> const& row,
     w_entropy *= -1;
     w_entropy *= static_cast<double>(total_row) / total_instances;
     return w_entropy;
+}
+
+double
+C4_5::compute_split_entropy(unsigned int total_row,
+                            size_t total_instances) const
+{
+    double          split_e = 0;
+
+    if (total_row == 0
+        or (split_e = static_cast<double>(total_row) / total_instances) == 0)
+        return 0;
+    return split_e * std::log2(split_e) * -1;
 }
 
 }   // end of namespace task

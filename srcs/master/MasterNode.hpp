@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-17 16:52:53
+// Modified: 2017-08-17 20:25:39
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -45,7 +45,7 @@ class MasterNode : public ANode
             try {
                 DecisionTree*               dt_root;
                 mlpack::data::DatasetInfo   data_info;
-                InductionAlgo               induction_algorithm(_communicator);
+                InductionAlgo               induction_algorithm(_comm);
 
                 mlpack::data::Load(_training_set, _data, data_info, true);
                 if (_labels_dim == -1)  // labels dimension is not set
@@ -58,6 +58,7 @@ class MasterNode : public ANode
             } catch (std::exception const& e) {
                 ddti::Logger.log(e.what(), mlpack::Log::Fatal);
             }
+            _comm.barrier();
         }
 
     protected:
