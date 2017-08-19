@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-17 21:02:16
+// Modified: 2017-08-19 17:29:48
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -26,6 +26,20 @@ namespace induction {
 class C4_5
 {
     public:
+        struct Parameters
+        {
+            Parameters() : debug(false), min_leaf_size(2)
+            {}
+
+            bool            debug;          // logs some debug info (i.e. IGR)
+            unsigned int    min_leaf_size;  // min. number of instances per leaf
+        };
+
+        using ull_t = unsigned long long;
+        template <typename T>
+        using StdVecVec = std::vector<std::vector<T>>;
+
+    public:
         C4_5(utils::mpi::Communicator const& comm);
         virtual ~C4_5();
 
@@ -33,25 +47,29 @@ class C4_5
         C4_5&           operator=(C4_5 const& other) = delete;
 
     public:
-        DecisionTree*   operator()(Dataset<double> const& dataset);
+        DecisionTree*   operator()(Dataset<double> const& dataset,
+                                   Parameters const& conf = Parameters());
 
     protected:
         DecisionTree*   rec_train_node(arma::Mat<double> const& data,
                                        std::vector<size_t> const& attrs,
                                        int split_value = -1);
         void            send_task(int task_code) const;
-        void            build_children_nodes(DecisionTree* node,
-                                             arma::Mat<double> const& node_data,
-                                             std::vector<size_t> const& nodeatt,
-                                             size_t attr_split);
+        void            build_children(DecisionTree* node,
+                                       arma::Mat<double> const& node_data,
+                                       StdVecVec<ull_t> const& split_cols,
+                                       std::vector<size_t> const& node_attrs);
         DecisionTree*   create_leaf(size_t label, int split_value,
                                     size_t nb_instances) const;
+        bool            check_leaf_size(StdVecVec<ull_t> const& cols) const;
 
         std::pair<size_t, double>
         select_attribute(arma::Mat<double> const& data,
                          std::vector<size_t> const& attrs, double entropy);
         std::map<size_t, ContTable>
         count_contingencies(arma::Mat<double> const& data);
+        StdVecVec<ull_t>
+        get_split_indices(arma::Mat<double> const& data, size_t attr) const;
 
         // scatter matrix by column or by row
         // NOTE: we don't allow the scatter of subviews because they might
@@ -87,7 +105,7 @@ class C4_5
 
         static double
         compute_entropy(arma::subview_row<double> const& dim,
-                        size_t* majority_class = nullptr,
+                        std::pair<size_t, size_t>* majority_class = nullptr,
                         bool* is_only_class = nullptr);
 
     protected:
@@ -95,8 +113,9 @@ class C4_5
         task::C4_5                      _tasks;
         utils::mpi::datatype::Manager   _mpi_types;
 
-        // used during training:
-        Dataset<double>                 _dataset;
+        // only used during training:
+        Dataset<double>     _dataset;
+        Parameters          _conf;
 };
 
 }   // end of namespace induction

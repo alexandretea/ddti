@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-18 17:54:57
+// Modified: 2017-08-19 17:37:08
 
 #include <algorithm>
 #include <vector>
@@ -26,8 +26,8 @@ C4_5::~C4_5()
 {
 }
 
-DecisionTree*
-C4_5::operator()(Dataset<double> const& dataset) // TODO change to <uint> ?
+DecisionTree* // TODO change to <uint> ?
+C4_5::operator()(Dataset<double> const& dataset, Parameters const& conf)
 {
     std::vector<size_t> attributes;
     DecisionTree*       dt_root;
@@ -40,7 +40,8 @@ C4_5::operator()(Dataset<double> const& dataset) // TODO change to <uint> ?
             attributes.push_back(i);
     }
 
-    _dataset = dataset; // TODO fix: avoid copy of matrix
+    _dataset = dataset; // TODO use std::move to avoid copy
+    _conf = conf;
 
     dt_root = rec_train_node(dataset.subview(0, 0, dataset.n_rows() - 1,
                                              dataset.n_cols() - 1),
@@ -62,32 +63,46 @@ C4_5::rec_train_node(arma::Mat<double> const& data,
                      std::vector<size_t> const& attrs,
                      int split_value)
 {
-    double          entropy;
-    size_t          majority_class;
-    bool            is_only_class;
-    DecisionTree*   node;
+    double                      entropy;
+    std::pair<size_t, size_t>   maj_class; // <class, count>
+    bool                        is_only_class;
+    DecisionTree*               node;
 
     if (data.n_cols == 0)
         throw std::runtime_error("Not enough data");
     entropy = C4_5::compute_entropy(data.row(_dataset.labelsdim()),
-                                    &majority_class, &is_only_class);
+                                    &maj_class, &is_only_class);
     if (is_only_class or attrs.empty()) {   // TODO min nb instances?
-        return create_leaf(majority_class, split_value, data.n_cols);
+        return create_leaf(maj_class.first, split_value, maj_class.second);
     }
     // TODO bufferised scatter + bufferised load of matrix
+
     std::pair<size_t, double>   attr = select_attribute(data, attrs, entropy);
-    if (attr.second < 0.05) {   // base case: no information gain
-        return create_leaf(majority_class, split_value, data.n_cols);
+    if (attr.second < 0.05) {
+        // base case: no information gain
+        return create_leaf(maj_class.first, split_value, maj_class.second);
     }
 
-    ddti::Logger << "Create node with attribute `"
-                    + _dataset.attribute_name(attr.first) + "` ("
-                    + std::to_string(data.n_cols) +  "; IGR: "
-                    + std::to_string(attr.second) + ")";
+    StdVecVec<ull_t>    split_cols = get_split_indices(data, attr.first);
+    if (not check_leaf_size(split_cols)) {
+        return create_leaf(maj_class.first, split_value, maj_class.second);
+    }
 
-    node = new DecisionTree(attr.first, split_value);
-    build_children_nodes(node, data, attrs, attr.first);
+    ddti::Logger << "Split with attribute `"
+                    + _dataset.attribute_name(attr.first) + "` ("
+                    + std::to_string(data.n_cols) + ")";
+
+    node = new DecisionTree(attr.first, split_value, data.n_cols);
+    build_children(node, data, split_cols, attrs);
     return node;
+}
+
+bool
+C4_5::check_leaf_size(StdVecVec<ull_t> const& split_cols) const
+{
+    return std::min_element(split_cols.begin(), split_cols.end(),
+            [](auto& a, auto& b) { return a.size() < b.size(); })
+            ->size() >= _conf.min_leaf_size;  // check minimum leaf size
 }
 
 DecisionTree*
@@ -96,35 +111,25 @@ C4_5::create_leaf(size_t label, int split_value, size_t nb_instances) const
     ddti::Logger << "Create leaf with class `"
         + _dataset.mapping(_dataset.labelsdim(), label)
         + "` (" + std::to_string(nb_instances) + ")";
-    return new DecisionTree(label, split_value, true);
+    return new DecisionTree(label, split_value, nb_instances, true);
+    // TODO fix nb_instances
 }
 
 void
-C4_5::build_children_nodes(DecisionTree* node,
-                           arma::Mat<double> const& node_data,
-                           std::vector<size_t> const& node_attrs,
-                           size_t attr_split)
+C4_5::build_children(DecisionTree* node, arma::Mat<double> const& node_data,
+                     StdVecVec<ull_t> const& split_cols,
+                     std::vector<size_t> const& node_attrs)
 {
-    using ull_t = unsigned long long;
-
-    std::vector<size_t>             split_attrs = node_attrs;
-    std::vector<std::vector<ull_t>> cols_by_vals(
-            _dataset.mapping_size(attr_split));
+    std::vector<size_t> split_attrs = node_attrs;
 
     // remove the selected attribute from the attribute list
     split_attrs.erase(std::remove(split_attrs.begin(), split_attrs.end(),
-                attr_split), split_attrs.end());
-
-    // sort entries by value; each batch of entries will be given to a child
-    // for training
-    for (size_t col_i = 0; col_i < node_data.n_cols; ++col_i) {
-        cols_by_vals[node_data(attr_split, col_i)].push_back(col_i);
-    }
+                node->attribute()), split_attrs.end());
 
     // create and train child node
-    for (unsigned int split_value = 0; split_value < cols_by_vals.size();
+    for (unsigned int split_value = 0; split_value < split_cols.size();
          ++split_value) {
-        std::vector<ull_t> const& instances = cols_by_vals[split_value];
+        std::vector<ull_t> const& instances = split_cols[split_value];
 
         if (not instances.empty()) {
             node->add_child(rec_train_node(
@@ -186,8 +191,9 @@ C4_5::select_attribute(arma::Mat<double> const& data,
         info_gain_ratio = entropy - cond_e; // information gain
         if (split_e > 0)
             info_gain_ratio /= split_e;     // information gain ratio
-        ddti::Logger << "IGR(" + _dataset.attribute_name(dim) + ") = "
-                        + std::to_string(info_gain_ratio);
+        if (_conf.debug)
+            ddti::Logger << "IGR(" + _dataset.attribute_name(dim) + ") = "
+                            + std::to_string(info_gain_ratio);
         if (selected_attr.second < info_gain_ratio) {
             // keep track of largest information gain
             selected_attr.first = dim;
@@ -216,10 +222,25 @@ C4_5::count_contingencies(arma::Mat<double> const& data)
     return contingencies;
 }
 
+C4_5::StdVecVec<C4_5::ull_t>
+C4_5::get_split_indices(arma::Mat<double> const& node_data,
+                        size_t attr_split) const
+{
+    StdVecVec<ull_t> cols_by_vals(_dataset.mapping_size(attr_split));
+
+    // sort instances by value; each batch of instances will be given to a child
+    // for training
+    for (size_t col_i = 0; col_i < node_data.n_cols; ++col_i) {
+        cols_by_vals[node_data(attr_split, col_i)].push_back(col_i);
+    }
+    return cols_by_vals;
+}
+
 // static functions
 double
 C4_5::compute_entropy(arma::subview_row<double> const& dim,
-                      size_t* majority_class, bool* is_only_class)
+                      std::pair<size_t, size_t>* majority_class,
+                      bool* is_only_class)
 {
     // TODO distribute data?
     std::map<size_t, size_t>    counts; // <class value, count>
@@ -242,7 +263,7 @@ C4_5::compute_entropy(arma::subview_row<double> const& dim,
                 [](auto& p1, auto& p2)
                 { return p1.second < p2.second; });
 
-        *majority_class = it->first;
+        *majority_class = *it;
     }
     if (is_only_class != nullptr) {
         *is_only_class = (counts.size() <= 1);
