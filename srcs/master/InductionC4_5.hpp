@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-19 17:29:48
+// Modified: 2017-08-19 17:49:46
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -59,8 +59,8 @@ class C4_5
                                        arma::Mat<double> const& node_data,
                                        StdVecVec<ull_t> const& split_cols,
                                        std::vector<size_t> const& node_attrs);
-        DecisionTree*   create_leaf(size_t label, int split_value,
-                                    size_t nb_instances) const;
+        DecisionTree*   create_leaf(std::pair<size_t, size_t> const& label,
+                                    int split_value, size_t nb_instances) const;
         bool            check_leaf_size(StdVecVec<ull_t> const& cols) const;
 
         std::pair<size_t, double>

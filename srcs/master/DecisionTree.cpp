@@ -4,8 +4,9 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 18:23:20
-// Modified: 2017-08-19 17:38:16
+// Modified: 2017-08-19 17:59:07
 
+#include <iomanip>
 #include "DecisionTree.hpp"
 
 namespace ddti {
@@ -16,8 +17,9 @@ DecisionTree::DecisionTree()
 }
 
 DecisionTree::DecisionTree(unsigned int index, int split_value, size_t size,
-                           bool is_leaf)
-    : _is_leaf(is_leaf), _index(index), _size(size), _split_value(split_value)
+                           bool is_leaf, size_t misses)
+    : _is_leaf(is_leaf), _index(index), _size(size), _split_value(split_value),
+      _misses(misses)
 {
 }
 
@@ -30,7 +32,7 @@ DecisionTree::~DecisionTree()
 
 DecisionTree::DecisionTree(DecisionTree const& o)
     : _is_leaf(o._is_leaf), _index(o._index), _size(o._size),
-      _split_value(o._split_value), _children(o._children)
+      _split_value(o._split_value), _misses(o._misses), _children(o._children)
 {
 }
 
@@ -42,6 +44,7 @@ DecisionTree::operator=(DecisionTree const& o)
         _size = o._size;
         _split_value = o._split_value;
         _index = o._index;
+        _misses = o._misses;
         _children = o._children;
     }
     return *this;
@@ -83,6 +86,12 @@ DecisionTree::size() const
     return _size;
 }
 
+size_t
+DecisionTree::misses() const
+{
+    return _misses;
+}
+
 std::vector<DecisionTree*>::const_iterator
 DecisionTree::begin() const
 {
@@ -118,7 +127,12 @@ DecisionTree::print(Dataset<double> const& dataset,
         if (child->is_leaf()) {
             std::cout << ": "
                       << dataset.mapping(dataset.labelsdim(), child->label())
-                      << " (" << child->_size << ")";
+                      << " (" << child->_size << ".0";
+            if (child->_misses > 0)
+                std::cout << "/" << child->_misses << ".0";
+            std::cout << ")";
+            // NOTE: the appending of ".0" after the integers is to keep the
+            // same output style of Weka's J48
         }
         std::cout << std::endl;
 

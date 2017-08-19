@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-19 17:37:08
+// Modified: 2017-08-19 17:55:57
 
 #include <algorithm>
 #include <vector>
@@ -72,20 +72,21 @@ C4_5::rec_train_node(arma::Mat<double> const& data,
         throw std::runtime_error("Not enough data");
     entropy = C4_5::compute_entropy(data.row(_dataset.labelsdim()),
                                     &maj_class, &is_only_class);
-    if (is_only_class or attrs.empty()) {   // TODO min nb instances?
-        return create_leaf(maj_class.first, split_value, maj_class.second);
+    if (is_only_class or attrs.empty()) {
+        return create_leaf(maj_class, split_value, data.n_cols);
     }
     // TODO bufferised scatter + bufferised load of matrix
 
     std::pair<size_t, double>   attr = select_attribute(data, attrs, entropy);
     if (attr.second < 0.05) {
         // base case: no information gain
-        return create_leaf(maj_class.first, split_value, maj_class.second);
+        return create_leaf(maj_class, split_value, data.n_cols);
     }
 
     StdVecVec<ull_t>    split_cols = get_split_indices(data, attr.first);
     if (not check_leaf_size(split_cols)) {
-        return create_leaf(maj_class.first, split_value, maj_class.second);
+        // check minimum number of instances per leaf
+        return create_leaf(maj_class, split_value, data.n_cols);
     }
 
     ddti::Logger << "Split with attribute `"
@@ -106,13 +107,14 @@ C4_5::check_leaf_size(StdVecVec<ull_t> const& split_cols) const
 }
 
 DecisionTree*
-C4_5::create_leaf(size_t label, int split_value, size_t nb_instances) const
+C4_5::create_leaf(std::pair<size_t, size_t> const& label, int split_value,
+                  size_t nb_instances) const
 {
     ddti::Logger << "Create leaf with class `"
-        + _dataset.mapping(_dataset.labelsdim(), label)
-        + "` (" + std::to_string(nb_instances) + ")";
-    return new DecisionTree(label, split_value, nb_instances, true);
-    // TODO fix nb_instances
+        + _dataset.mapping(_dataset.labelsdim(), label.first)
+        + "` (" + std::to_string(label.second) + ")";
+    return new DecisionTree(label.first, split_value, nb_instances, true,
+                            nb_instances - label.second);
 }
 
 void
