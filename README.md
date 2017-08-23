@@ -9,7 +9,19 @@ List of the currently distributed tasks:
 - Computation of conditional entropies
 - Computation of split entropies
 
+## Table of Contents
+1. [Usage]
+2. [Deployment]
+3. [Dependencies]
+4. [Architecture]
+5. [Future improvements](#future-improvements)
+
 ## Usage
+Being an MPI software, Ddti should be executed using mpirun/mpiexec. Here is an
+example:
+
+```mpirun -n 4 ./ddti --training_set ../datasets/careval.csv --attributes buying maint doors persons lug_boot safety class -o careval_model.txt```
+
 ```
 Required input options:
 
@@ -71,6 +83,9 @@ Make sure to install all the dependencies, then execute:
 - boost_program_options
 - MLpack (for Load(), CLI, and Logger)
 - CMake
+
+## Architecture
+TODO
 
 ## Future improvements
 - Bufferise the loading and scattering of matrices
