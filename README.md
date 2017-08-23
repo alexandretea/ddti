@@ -12,49 +12,47 @@ List of the currently distributed tasks:
 ## Usage
 > Required input options:
 >
->   --training_set (-i) [string]  Path to the training dataset. The accepted
->                                 formats are CSV (.csv or .txt), ASCII (.txt),
->                                 Armadillo ASCII (.txt), PGM (.pgm), PPM (.ppm),
->                                 Raw binary (.bin), Armadillo binary (.bin).
+>>--training_set (-i) [string]
+>>>Path to the training dataset. The accepted formats are
+>>>CSV (.csv or .txt), ASCII (.txt), Armadillo ASCII (.txt), PGM (.pgm),
+>>>PPM (.ppm), Raw binary (.bin), Armadillo binary (.bin).
 >
 > Optional input options:
 >
->   --attributes (-a)             List of attribute names, separated by spaces
->                                 (e.g. -a name lastname age).  Default value
->   --debug (-d)                  Prints some debug information such as
->                                 Information Gain Ratio values.
->   --help (-h)                   Default help info.
->   --info [string]               Get help on a specific module or option.
->                                 Default value ''.
->   --labels_column (-l) [int]    Index of the column containing the labels to
->                                 predict (must be between 0 and N-1). If
->                                 unspecified, the algorithm will use the last
->                                 column of the dataset.  Default value -1.
->   --min_leaf_size (-m) [int]    Minimum number of instances per leaf.  Default
->                                 value 2.
->   --test_set (-t) [string]      The dataset used to test the predictive accuracy
->                                 of the generated model. If none is provided, the
->                                 training set will be used. The accepted formats
->                                 are CSV (.csv or .txt), ASCII (.txt), Armadillo
->                                 ASCII (.txt), PGM (.pgm), PPM (.ppm), Raw binary
->                                 (.bin), Armadillo binary (.bin).  Default value
->                                 ''.
->   --verbose (-v)                Display informational messages and the full list
->                                 of parameters and timers at the end of
->                                 execution.
->   --version (-V)                Display the version of mlpack.
+>> --attributes (-a)
+>>> List of attribute names, separated by spaces (e.g. -a name lastname age).
+>> --debug (-d)
+>>> Prints some debug information such as Information Gain Ratio values.
+>> --help (-h)
+>>> Default help info.
+>> --info [string]
+>>> Get help on a specific module or option.
+>> --labels_column (-l) [int]
+>>> Index of the column containing the labels to predict (must be between 0 and
+>>> N-1). If unspecified, the algorithm will use the last column of the dataset.
+>> --min_leaf_size (-m) [int]
+>>> Minimum number of instances per leaf. Default value 2.
+>> --test_set (-t) [string]
+>>> The dataset used to test the predictive accuracy of the generated model.
+>>> If none is provided, the training set will be used. The accepted formats
+>>> are CSV (.csv or .txt), ASCII (.txt), Armadillo ASCII (.txt), PGM (.pgm),
+>>> PPM (.ppm), Raw binary (.bin), Armadillo binary (.bin).
+>> --verbose (-v)
+>>> Display informational messages and the full list of parameters and timers at
+>>> the end of execution.
+>> --version (-V)
+>>> Display the version of mlpack.
 >
 > Optional output options:
 >
->   --model_file (-o) [string]    The path of the file where the model will be
->                                 dumped. The only supported output format at the
->                                 moment is .txt. If unset, the model will be
->                                 printed on the standard output.  Default value
->                                 ''.
+>> --model_file (-o) [string]
+>>> The path of the file where the model will be dumped. The only supported
+>>> output format at the moment is .txt. If unset, the model will be printed on
+>>> the standard output.
 
 ## Deployment
 Make sure to install all the dependencies, then execute:
-> git clone https://github.com/alexandretea/ddti.git && mkdir ddti/build && cd ddti/build && cmake .. && make
+```git clone https://github.com/alexandretea/ddti.git && mkdir ddti/build && cd ddti/build && cmake .. && make```
 
 ## Dependencies
 - An MPI implementation
