@@ -2,18 +2,21 @@
 Train a model with a decision tree, then measures its predictive accuracy.
 Ddti does this in a distributed manner, using MPI. The master node will induct
 the decision tree, using slave nodes to execute tasks such as computing
-entropies. The algorithm used to build the decision tree is based on Quilan's C4.5.
+entropies. The algorithm used to build the decision tree is based on Quilan's
+C4.5.
 
 List of the currently distributed tasks:
 - Computation of contingency tables
 - Computation of conditional entropies
 - Computation of split entropies
 
+Written in C++14.
+
 ## Table of Contents
-1. [Usage]
-2. [Deployment]
-3. [Dependencies]
-4. [Architecture]
+1. [Usage](#usage)
+2. [Deployment](#deployment)
+3. [Dependencies](#dependencies)
+4. [Architecture](#architecture)
 5. [Future improvements](#future-improvements)
 
 ## Usage
@@ -78,6 +81,7 @@ Make sure to install all the dependencies, then execute:
 ```git clone https://github.com/alexandretea/ddti.git && mkdir ddti/build && cd ddti/build && cmake .. && make```
 
 ## Dependencies
+- C++14
 - An MPI implementation
 - Armadillo (for matrices)
 - boost_program_options
