@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DdtiANode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:53:59
-// Modified: 2017-08-17 20:24:08
+// Modified: 2017-08-23 18:17:54
 
 #ifndef DDTIANODE_H
 #define DDTIANODE_H
@@ -27,6 +27,7 @@ class ANode
         ANode&          operator=(ANode const& other) = delete;
 
     public:
+        virtual void        init_cli(int ac, char** av) = 0;
         virtual void        run() = 0;
         size_t              id() const;
         size_t              nb_slaves() const;

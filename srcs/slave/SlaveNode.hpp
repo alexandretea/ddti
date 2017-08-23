@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/SlaveNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-17 20:24:04
+// Modified: 2017-08-23 18:20:58
 
 #ifndef SLAVENODE_H
 #define SLAVENODE_H
@@ -29,6 +29,21 @@ class SlaveNode : public ANode
         SlaveNode&      operator=(SlaveNode const& other) = delete;
 
     public:
+        virtual void
+        init_cli(int /* ac */, char** av)
+        {
+            char*   args[3] = { av[0], nullptr, nullptr };
+
+            for (char* arg = *av; arg != nullptr; ++arg) {
+                if (std::strcmp(arg, "-v") == 0
+                        or std::strcmp(arg, "--verbose") == 0) {
+                    args[1] = arg;
+                    break ;
+                }
+            }
+            mlpack::CLI::ParseCommandLine(args[1] == nullptr ? 1 : 2, args);
+        }
+
         virtual void
         run()
         {

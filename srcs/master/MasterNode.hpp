@@ -4,11 +4,13 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-23 01:03:37
+// Modified: 2017-08-23 18:43:16
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
 
+#include <fstream>
+#include <string>
 #include <mlpack/core.hpp>
 #include "ANode.hpp"
 #include "DecisionTree.hpp"
@@ -24,13 +26,8 @@ template <typename InductionAlgo>
 class MasterNode : public ANode
 {
     public:
-        MasterNode(utils::mpi::Communicator const& process,
-                   std::string const& training_set, int labels_dim,
-                   std::vector<std::string> const& attr_names = {},
-                   std::string const& test_set = "")
-            : ANode(process), _training_set(training_set),
-              _labels_dim(labels_dim), _test_set(test_set),
-              _attr_names(attr_names)
+        MasterNode(utils::mpi::Communicator const& process)
+            : ANode(process)
         {}
 
         virtual ~MasterNode() {}
@@ -40,17 +37,85 @@ class MasterNode : public ANode
 
     public:
         virtual void
+        init_cli(int ac, char** av)
+        {
+            using namespace mlpack;
+
+            // Input parameters
+            PARAM_STRING_IN_REQ(PARAM_TRAINING_SET,
+                                "Path to the training dataset.", "i");
+            // TODO specify allowed formats for datasets, in param help or program info
+            PARAM_STRING_IN(
+                PARAM_TEST_SET,
+                "The dataset used to test the predictive accuracy of the "
+                "generated model. If none is provided, the training set "
+                "will be used.", "t", ""
+            );
+            PARAM_INT_IN(
+                PARAM_LABELS_DIMENSION,
+                "Index of the column containing the labels to predict "
+                "(must be between 0 and N-1). If unspecified, the algorithm "
+                "will use the last column of the dataset.",
+                "l", -1
+            );
+            PARAM_VECTOR_IN(std::string, PARAM_ATTRIBUTES,
+                            "List of attribute names, separated by spaces "
+                            "(e.g. -a name lastname age).", "a");
+
+            // Output parameters
+            PARAM_DOUBLE_OUT(
+                OUT_PREDICTIVE_ACC,
+                "The predictive accuracy of the generated model, obtained using"
+                " the provided test set, or the training set if no test set was"
+                " specified."
+            );
+            PARAM_STRING_OUT(
+                OUT_MODEL_FILE,
+                "The path of the file where the model will be dumped. The only "
+                "supported output format at the moment is .txt. If unset, the "
+                "model will be printed on the standard output.",
+                "o"
+            );
+            // TODO timerrrr
+
+            CLI::ParseCommandLine(ac, av);
+
+            _train_set_path = CLI::GetParam<std::string>(PARAM_TRAINING_SET);
+            _labels_dim = CLI::GetParam<int>(PARAM_LABELS_DIMENSION);
+            _test_set_path = CLI::GetParam<std::string>(PARAM_TEST_SET);
+            _attr_names =
+                CLI::GetParam<std::vector<std::string>>(PARAM_ATTRIBUTES);
+        }
+
+        virtual void
         run()
         {
+            using namespace mlpack;
+
             ddti::Logger << "Running";
             try {
-                Dataset<double> dataset = load_data();
-                Classifier      classifier(train(dataset));
+                Dataset<double> training_set = load_data(_train_set_path);
+                Classifier      classifier(train(training_set));
+                double          acc;
 
-                ddti::Logger << "Test model using "
-                                + (_test_set.empty() ? "training set"
-                                                     : _test_set);
-                std::cout << classifier.test(dataset) << std::endl;
+                // test predictive accuracy
+                if (_test_set_path.empty()) {
+                    ddti::Logger << "Test model using training set";
+                    acc = classifier.test(training_set);
+                } else {
+                    Dataset<double> test_set = load_data(_test_set_path);
+
+                    ddti::Logger << "Test model using " + _test_set_path;
+                    acc = classifier.test(test_set);
+                }
+
+                // output variables
+                CLI::GetParam<double>(OUT_PREDICTIVE_ACC) = acc;
+                if (CLI::HasParam(OUT_MODEL_FILE))
+                    output_model(classifier, training_set);
+                else
+                    classifier.dump_model(training_set);
+                // TODO output tree size / nb leaves
             } catch (std::exception const& e) {
                 ddti::Logger.log(e.what(), mlpack::Log::Fatal);
             }
@@ -58,13 +123,25 @@ class MasterNode : public ANode
         }
 
     protected:
+        void
+        output_model(Classifier const& classifier,
+                     Dataset<double> const& dataset) const
+        {
+            std::fstream    stream(
+                mlpack::CLI::GetParam<std::string>(OUT_MODEL_FILE).c_str(),
+                std::fstream::out
+            );
+
+            classifier.dump_model(dataset, stream);
+        }
+
         Dataset<double>
-        load_data()
+        load_data(std::string const& path)
         {
             mlpack::data::DatasetInfo   data_info;
             arma::mat                   data;
 
-            mlpack::data::Load(_training_set, data, data_info, true);
+            mlpack::data::Load(path, data, data_info, true);
             if (_labels_dim == -1)  // labels dimension is not set
                 _labels_dim = data.n_rows - 1;
             return Dataset<double>(data, _labels_dim, _attr_names, &data_info);
@@ -76,18 +153,44 @@ class MasterNode : public ANode
             DecisionTree*   dt_root;
             InductionAlgo   induction_algorithm(_comm);
 
-            ddti::Logger << "Decision tree induction started"; // TODO log config
+            ddti::Logger << "Induction started"; // TODO log config
             dt_root = induction_algorithm(dataset);
             ddti::Logger << "Induction complete";
             return dt_root;
         }
 
     protected:
-        std::string                 _training_set;
+        std::string                 _train_set_path;
         int                         _labels_dim;
-        std::string                 _test_set;
+        std::string                 _test_set_path;
         std::vector<std::string>    _attr_names;
+
+        // Input parameter names
+        static const char* PARAM_TRAINING_SET;
+        static const char* PARAM_TEST_SET;
+        static const char* PARAM_LABELS_DIMENSION;
+        static const char* PARAM_ATTRIBUTES;
+
+        // Output parameter names
+        static const char* OUT_PREDICTIVE_ACC;
+        static const char* OUT_MODEL_FILE;
 };
+
+// Input parameter names
+template <typename T>
+const char* MasterNode<T>::PARAM_TRAINING_SET       = "training_set";
+template <typename T>
+const char* MasterNode<T>::PARAM_TEST_SET           = "test_set";
+template <typename T>
+const char* MasterNode<T>::PARAM_LABELS_DIMENSION   = "labels_column";
+template <typename T>
+const char* MasterNode<T>::PARAM_ATTRIBUTES         = "attributes";
+
+// Output parameter names
+template <typename T>
+const char* MasterNode<T>::OUT_PREDICTIVE_ACC       = "predictive_accuracy";
+template <typename T>
+const char* MasterNode<T>::OUT_MODEL_FILE           = "model_file";
 
 }   // end of namespace ddti
 

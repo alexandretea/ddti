@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-23 01:13:49
+// Modified: 2017-08-23 15:59:23
 
 #include <algorithm>
 #include <vector>
@@ -31,7 +31,6 @@ C4_5::operator()(Dataset<double> const& dataset, Parameters const& conf)
 {
     std::vector<size_t> attributes;
     DecisionTree*       dt_root;
-    int                 task_code;
 
     // build attributes vector
     attributes.reserve(dataset.n_rows());

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 17:49:15
-// Modified: 2017-08-23 01:12:25
+// Modified: 2017-08-23 17:13:48
 
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
@@ -37,7 +37,7 @@ class DecisionTree
         DecisionTree*   child(size_t split) const;
 
         void            add_child(DecisionTree* node);
-        void            output_txt(Dataset<double> const& mappings,
+        void            output_txt(Dataset<double> const& dataset,
                                    std::ostream& os = std::cout,
                                    unsigned int level = 0) const;
 
