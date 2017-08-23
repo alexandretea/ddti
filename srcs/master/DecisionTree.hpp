@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 17:49:15
-// Modified: 2017-08-23 21:57:12
+// Modified: 2017-08-23 22:10:46
 
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
@@ -20,6 +20,8 @@ class DecisionTree
 {
     public:
         using UniqueDtMap = std::map<size_t, std::unique_ptr<DecisionTree>>;
+        using UIntPair = std::pair<unsigned int, unsigned int>;
+
     public:
         DecisionTree();
         DecisionTree(unsigned int index, int split_value, size_t nb_insts,
@@ -38,6 +40,10 @@ class DecisionTree
         size_t          nb_instances() const;
         size_t          misses() const;
         DecisionTree*   child(size_t split) const;
+        UIntPair        size() const;
+        // returns <nb nodes, nb leaves>
+        // NOTE: traverse tree and count nodes without caching, bare in mind
+        // that using it will alter the performance of your code
 
         void            add_child(std::unique_ptr<DecisionTree> node);
         void            output_txt(Dataset<double> const& dataset,

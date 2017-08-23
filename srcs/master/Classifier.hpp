@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Classifier.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-23 00:25:45
-// Modified: 2017-08-23 21:32:07
+// Modified: 2017-08-23 22:32:31
 
 #ifndef CLASSIFIER_H
 #define CLASSIFIER_H
@@ -26,11 +26,11 @@ class Classifier
         Classifier& operator=(Classifier const& o) = delete;
 
     public:
-        double      test(Dataset<double> const& dataset) const;
-        size_t      classify(arma::Col<double> const& instance) const;
+        DecisionTree*       operator->();
+        DecisionTree const* operator->() const;
+        double              test(Dataset<double> const& dataset) const;
+        size_t              classify(arma::Col<double> const& instance) const;
         // returns the predictive accuracy of the model
-        void        dump_model(Dataset<double> const& dataset,
-                               std::ostream& os = std::cout) const;
 
     private:
         std::unique_ptr<DecisionTree>   _root;

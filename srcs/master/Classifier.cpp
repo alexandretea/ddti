@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Classifier.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-23 00:33:01
-// Modified: 2017-08-23 21:30:25
+// Modified: 2017-08-23 22:32:35
 
 #include "Classifier.hpp"
 
@@ -43,10 +43,16 @@ Classifier::classify(arma::Col<double> const& instance) const
     return node->label();
 }
 
-void
-Classifier::dump_model(Dataset<double> const& dataset, std::ostream& os) const
+DecisionTree*
+Classifier::operator->()
 {
-    _root->output_txt(dataset, os);
+    return _root.get();
+}
+
+DecisionTree const*
+Classifier::operator->() const
+{
+    return _root.get();
 }
 
 }   // end of namespace ddti

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 18:23:20
-// Modified: 2017-08-23 21:55:22
+// Modified: 2017-08-23 22:11:26
 
 #include <iomanip>
 #include "DecisionTree.hpp"
@@ -67,6 +67,22 @@ size_t
 DecisionTree::misses() const
 {
     return _misses;
+}
+
+DecisionTree::UIntPair
+DecisionTree::size() const
+{
+    UIntPair    size = std::make_pair(1, 0);
+
+    if (_is_leaf)
+        return std::make_pair(1, 1);
+    for (auto& p: _children) {
+        UIntPair child_size = p.second->size();
+
+        size.first += child_size.first;
+        size.second += child_size.second;
+    }
+    return size;
 }
 
 DecisionTree*

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/SlaveNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-23 20:00:38
+// Modified: 2017-08-23 22:52:21
 
 #ifndef SLAVENODE_H
 #define SLAVENODE_H
@@ -30,11 +30,13 @@ class SlaveNode : public ANode
 
     public:
         virtual void
-        init_cli(int /* ac */, char** av)
+        init_cli(int ac, char** av)
         {
             char*   args[3] = { av[0], nullptr, nullptr };
 
-            for (char* arg = *av; arg != nullptr; ++arg) {
+            for (int i = 0; i < ac; ++i) {
+                char* arg = av[i];
+
                 if (std::strcmp(arg, "-v") == 0
                         or std::strcmp(arg, "--verbose") == 0) {
                     args[1] = arg;

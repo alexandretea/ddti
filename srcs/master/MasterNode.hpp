@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-23 21:45:52
+// Modified: 2017-08-23 23:06:17
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -75,15 +75,25 @@ class MasterNode : public ANode
             );
 
             // Output parameters
+            // NOTE: The nb of leaves and tree size have the type double because
+            // mlpack's macro PARAM_INT_OUT is bugged
+            PARAM_DOUBLE_OUT(
+                OUT_TREE_SIZE,
+                "Size of the built decision tree"
+            );
+            PARAM_DOUBLE_OUT(
+                OUT_NB_LEAVES,
+                "Number of leaves in the built decision tree"
+            );
+            PARAM_DOUBLE_OUT(
+                OUT_INDUC_DURAT,
+                "Time taken to build the decision tree."
+            );
             PARAM_DOUBLE_OUT(
                 OUT_PREDICTIVE_ACC,
                 "The predictive accuracy of the generated model, obtained using"
                 " the provided test set, or the training set if no test set was"
                 " specified."
-            );
-            PARAM_DOUBLE_OUT(
-                OUT_INDUC_DURAT,
-                "Time taken to build the decision tree."
             );
             PARAM_STRING_OUT(
                 OUT_MODEL_FILE,
@@ -92,7 +102,6 @@ class MasterNode : public ANode
                 "model will be printed on the standard output.",
                 "o"
             );
-            // TODO timerrrr
 
             CLI::ParseCommandLine(ac, av);
 
@@ -136,8 +145,14 @@ class MasterNode : public ANode
                 if (CLI::HasParam(OUT_MODEL_FILE))
                     output_model(classifier, training_set);
                 else
-                    classifier.dump_model(training_set);
-                // TODO output tree size / nb leaves
+                    classifier->output_txt(training_set);
+
+                { // decision tree size
+                    DecisionTree::UIntPair  size = classifier->size();
+
+                    CLI::GetParam<double>(OUT_TREE_SIZE) = size.first;
+                    CLI::GetParam<double>(OUT_NB_LEAVES) = size.second;
+                }
             } catch (std::exception const& e) {
                 ddti::Logger.log(e.what(), mlpack::Log::Fatal);
             }
@@ -154,7 +169,7 @@ class MasterNode : public ANode
                 std::fstream::out
             );
 
-            classifier.dump_model(dataset, stream);
+            classifier->output_txt(dataset, stream);
         }
 
         Dataset<double>
@@ -207,6 +222,8 @@ class MasterNode : public ANode
         static const char* OUT_PREDICTIVE_ACC;
         static const char* OUT_MODEL_FILE;
         static const char* OUT_INDUC_DURAT; // induction duration
+        static const char* OUT_TREE_SIZE;
+        static const char* OUT_NB_LEAVES;
 };
 
 // Input parameter names
@@ -230,6 +247,10 @@ template <typename T>
 const char* MasterNode<T>::OUT_PREDICTIVE_ACC       = "Predictive accuracy";
 template <typename T>
 const char* MasterNode<T>::OUT_INDUC_DURAT          = "Induction duration (s)";
+template <typename T>
+const char* MasterNode<T>::OUT_TREE_SIZE            = "Tree size";
+template <typename T>
+const char* MasterNode<T>::OUT_NB_LEAVES            = "Number of leaves";
 
 }   // end of namespace ddti
 
