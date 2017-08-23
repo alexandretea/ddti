@@ -4,20 +4,22 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Classifier.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-23 00:25:45
-// Modified: 2017-08-23 18:29:48
+// Modified: 2017-08-23 21:32:07
 
 #ifndef CLASSIFIER_H
 #define CLASSIFIER_H
 
+#include <memory>
 #include <armadillo>
 #include "DecisionTree.hpp"
 
 namespace ddti {
 
+// Note: The Classifier object takes ownership of the decision tree
 class Classifier
 {
     public:
-        Classifier(DecisionTree* dt);
+        Classifier(std::unique_ptr<DecisionTree> dt);
         ~Classifier();
 
         Classifier(Classifier const& o) = delete;
@@ -31,7 +33,7 @@ class Classifier
                                std::ostream& os = std::cout) const;
 
     private:
-        DecisionTree*   _root;
+        std::unique_ptr<DecisionTree>   _root;
 };
 
 }   // end of namespace ddti

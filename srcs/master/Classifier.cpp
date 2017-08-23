@@ -4,14 +4,14 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Classifier.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-23 00:33:01
-// Modified: 2017-08-23 18:27:56
+// Modified: 2017-08-23 21:30:25
 
 #include "Classifier.hpp"
 
 namespace ddti {
 
-Classifier::Classifier(DecisionTree* dt)
-    : _root(dt)
+Classifier::Classifier(std::unique_ptr<DecisionTree> dt)
+    : _root(std::move(dt))
 {
 }
 Classifier::~Classifier()
@@ -35,7 +35,7 @@ Classifier::test(Dataset<double> const& dataset) const
 size_t
 Classifier::classify(arma::Col<double> const& instance) const
 {
-    DecisionTree*   node = _root;
+    DecisionTree*   node = _root.get();
 
     while (not node->is_leaf()) {
         node = node->child(instance(node->attribute()));

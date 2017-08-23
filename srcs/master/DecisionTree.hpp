@@ -4,27 +4,30 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 17:49:15
-// Modified: 2017-08-23 17:13:48
+// Modified: 2017-08-23 21:57:12
 
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
 
+#include <memory>
 #include <map>
 #include "Dataset.hpp"
 
 namespace ddti {
 
-// TODO better design to handle splits/leaves
+// Note: A decision tree has ownership of his children (via unique_ptrs)
 class DecisionTree
 {
     public:
+        using UniqueDtMap = std::map<size_t, std::unique_ptr<DecisionTree>>;
+    public:
         DecisionTree();
-        DecisionTree(unsigned int index, int split_value, size_t size,
+        DecisionTree(unsigned int index, int split_value, size_t nb_insts,
                      bool is_leaf = false, size_t misses = 0);
         virtual ~DecisionTree();
 
-        DecisionTree(DecisionTree const& other);
-        DecisionTree&   operator=(DecisionTree const& other);
+        DecisionTree(DecisionTree const& other) = delete;
+        DecisionTree&   operator=(DecisionTree const& other) = delete;
 
     public:
         bool            is_leaf() const;
@@ -32,27 +35,27 @@ class DecisionTree
         unsigned int    attribute() const;
         unsigned int    label() const;
         int             split() const;  // returns -1 if node is root
-        size_t          size() const;
+        size_t          nb_instances() const;
         size_t          misses() const;
         DecisionTree*   child(size_t split) const;
 
-        void            add_child(DecisionTree* node);
+        void            add_child(std::unique_ptr<DecisionTree> node);
         void            output_txt(Dataset<double> const& dataset,
                                    std::ostream& os = std::cout,
                                    unsigned int level = 0) const;
 
-        std::map<size_t, DecisionTree*>::const_iterator  begin() const;
-        std::map<size_t, DecisionTree*>::const_iterator  end() const;
+        UniqueDtMap::const_iterator  begin() const;
+        UniqueDtMap::const_iterator  end() const;
 
     protected:
-        bool                        _is_leaf;
-        unsigned int                _index;
+        bool            _is_leaf;
+        unsigned int    _index;
         // index represents a class if the node is a leaf; a feature otherwise
-        size_t                      _size;          // nb instances
-        int                         _split_value;   // -1 if node is the root
-        size_t                      _misses;
+        size_t          _nb_instances;  // nb instances
+        int             _split_value;   // -1 if node is the root
+        size_t          _misses;
         // number of instances that doesn't match leaf class
-        std::map<size_t, DecisionTree*> _children;
+        UniqueDtMap     _children;
 };
 
 }

@@ -1,7 +1,6 @@
 # To do
 - index submission with html file and relative links
-- parameters
-- timer
+- fix all todos
 - test other datasets
 - pruning?
 - ARFF?

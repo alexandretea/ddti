@@ -4,13 +4,13 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-19 17:49:46
+// Modified: 2017-08-23 21:47:57
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
 
 #include <map>
-#include <armadillo>  // TODO change with armadillo include
+#include <armadillo>
 #include "MasterNode.hpp"
 #include "DecisionTree.hpp"
 #include "MPIDatatypeManager.hpp"
@@ -28,11 +28,18 @@ class C4_5
     public:
         struct Parameters
         {
+            bool            debug;          // logs some debug info (i.e. IGR)
+            unsigned int    min_leaf_size;  // min. number of instances per leaf
+
             Parameters() : debug(false), min_leaf_size(2)
             {}
 
-            bool            debug;          // logs some debug info (i.e. IGR)
-            unsigned int    min_leaf_size;  // min. number of instances per leaf
+            std::string
+            to_string() const
+            {
+                return std::string("debug(") + (debug ? "true" : "false") + ")"
+                       ", min_leaf_size(" + std::to_string(min_leaf_size) + ")";
+            }
         };
 
         using ull_t = unsigned long long;
@@ -47,8 +54,9 @@ class C4_5
         C4_5&           operator=(C4_5 const& other) = delete;
 
     public:
-        DecisionTree*   operator()(Dataset<double> const& dataset,
-                                   Parameters const& conf = Parameters());
+        std::unique_ptr<DecisionTree>
+        operator()(Dataset<double> const& dataset,
+                   Parameters const& conf = Parameters());
 
     protected:
         DecisionTree*   rec_train_node(arma::Mat<double> const& data,
@@ -62,14 +70,18 @@ class C4_5
         DecisionTree*   create_leaf(std::pair<size_t, size_t> const& label,
                                     int split_value, size_t nb_instances) const;
         bool            check_leaf_size(StdVecVec<ull_t> const& cols) const;
+        void            debug(std::string const& s) const;
 
-        std::pair<size_t, double>
-        select_attribute(arma::Mat<double> const& data,
-                         std::vector<size_t> const& attrs, double entropy);
-        std::map<size_t, ContTable>
-        count_contingencies(arma::Mat<double> const& data);
-        StdVecVec<ull_t>
-        get_split_indices(arma::Mat<double> const& data, size_t attr) const;
+        std::pair<size_t, double>   select_attribute(
+            arma::Mat<double> const& data, std::vector<size_t> const& attrs,
+            double entropy
+        );
+        std::map<size_t, ContTable> count_contingencies(
+            arma::Mat<double> const& data
+        );
+        StdVecVec<ull_t>            get_split_indices(
+            arma::Mat<double> const& data, size_t attr
+        ) const;
 
         // scatter matrix by column or by row
         // NOTE: we don't allow the scatter of subviews because they might

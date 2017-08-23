@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/SlaveNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-23 18:20:58
+// Modified: 2017-08-23 20:00:38
 
 #ifndef SLAVENODE_H
 #define SLAVENODE_H

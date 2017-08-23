@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-23 15:59:23
+// Modified: 2017-08-23 21:52:07
 
 #include <algorithm>
 #include <vector>
@@ -26,11 +26,11 @@ C4_5::~C4_5()
 {
 }
 
-DecisionTree* // TODO change to <uint> ?
+std::unique_ptr<DecisionTree>
 C4_5::operator()(Dataset<double> const& dataset, Parameters const& conf)
 {
-    std::vector<size_t> attributes;
-    DecisionTree*       dt_root;
+    std::vector<size_t>             attributes;
+    std::unique_ptr<DecisionTree>   dt_root;
 
     // build attributes vector
     attributes.reserve(dataset.n_rows());
@@ -42,9 +42,11 @@ C4_5::operator()(Dataset<double> const& dataset, Parameters const& conf)
     _dataset = dataset; // TODO use std::move to avoid copy
     _conf = conf;
 
-    dt_root = rec_train_node(dataset.subview(0, 0, dataset.n_rows() - 1,
-                                             dataset.n_cols() - 1),
-                             attributes);
+    dt_root = std::unique_ptr<DecisionTree>(
+        rec_train_node(dataset.subview(0, 0, dataset.n_rows() - 1,
+                                       dataset.n_cols() - 1),
+                       attributes)
+    );
     send_task(task::End);
     // TODO end of induction? although pruning
     return dt_root;
@@ -87,9 +89,9 @@ C4_5::rec_train_node(arma::Mat<double> const& data,
         return create_leaf(maj_class, split_value, data.n_cols);
     }
 
-    ddti::Logger << "Split with attribute `"
-                    + _dataset.attribute_name(attr.first) + "` ("
-                    + std::to_string(data.n_cols) + ")";
+    debug("Split with attribute `"
+          + _dataset.attribute_name(attr.first) + "` ("
+          + std::to_string(data.n_cols) + ")");
 
     node = new DecisionTree(attr.first, split_value, data.n_cols);
     build_children(node, data, split_cols, attrs);
@@ -108,9 +110,9 @@ DecisionTree*
 C4_5::create_leaf(std::pair<size_t, size_t> const& label, int split_value,
                   size_t nb_instances) const
 {
-    ddti::Logger << "Create leaf with class `"
+    debug("Create leaf with class `"
         + _dataset.mapping(_dataset.labelsdim(), label.first)
-        + "` (" + std::to_string(label.second) + ")";
+        + "` (" + std::to_string(label.second) + ")");
     return new DecisionTree(label.first, split_value, nb_instances, true,
                             nb_instances - label.second);
 }
@@ -132,10 +134,10 @@ C4_5::build_children(DecisionTree* node, arma::Mat<double> const& node_data,
         std::vector<ull_t> const& instances = split_cols[split_value];
 
         if (not instances.empty()) {
-            node->add_child(rec_train_node(
-                                node_data.cols(arma::uvec(instances)),
-                                split_attrs, split_value
-                            ));
+            node->add_child(std::unique_ptr<DecisionTree>(
+                rec_train_node(node_data.cols(arma::uvec(instances)),
+                                split_attrs, split_value)
+            ));
         }
     }
 }
@@ -191,9 +193,8 @@ C4_5::select_attribute(arma::Mat<double> const& data,
         info_gain_ratio = entropy - cond_e; // information gain
         if (split_e > 0)
             info_gain_ratio /= split_e;     // information gain ratio
-        if (_conf.debug)
-            ddti::Logger << "IGR(" + _dataset.attribute_name(dim) + ") = "
-                            + std::to_string(info_gain_ratio);
+        debug("IGR(" + _dataset.attribute_name(dim) + ") = "
+              + std::to_string(info_gain_ratio));
         if (selected_attr.second < info_gain_ratio) {
             // keep track of largest information gain
             selected_attr.first = dim;
@@ -234,6 +235,13 @@ C4_5::get_split_indices(arma::Mat<double> const& node_data,
         cols_by_vals[node_data(attr_split, col_i)].push_back(col_i);
     }
     return cols_by_vals;
+}
+
+void
+C4_5::debug(std::string const& s) const
+{
+    if (_conf.debug)
+        ddti::Logger << s;
 }
 
 // static functions

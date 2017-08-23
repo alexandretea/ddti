@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-23 18:43:16
+// Modified: 2017-08-23 21:45:52
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -49,7 +49,8 @@ class MasterNode : public ANode
                 PARAM_TEST_SET,
                 "The dataset used to test the predictive accuracy of the "
                 "generated model. If none is provided, the training set "
-                "will be used.", "t", ""
+                "will be used.",
+                "t", ""
             );
             PARAM_INT_IN(
                 PARAM_LABELS_DIMENSION,
@@ -61,6 +62,17 @@ class MasterNode : public ANode
             PARAM_VECTOR_IN(std::string, PARAM_ATTRIBUTES,
                             "List of attribute names, separated by spaces "
                             "(e.g. -a name lastname age).", "a");
+            PARAM_INT_IN(
+                PARAM_MINLEAFSIZE,
+                "Minimum number of instances per leaf.",
+                "m", 2
+            );
+            PARAM_FLAG(
+                PARAM_OUTPUT_DEBUG,
+                "Prints some debug information such as Information Gain Ratio "
+                "values.",
+                "d"
+            );
 
             // Output parameters
             PARAM_DOUBLE_OUT(
@@ -68,6 +80,10 @@ class MasterNode : public ANode
                 "The predictive accuracy of the generated model, obtained using"
                 " the provided test set, or the training set if no test set was"
                 " specified."
+            );
+            PARAM_DOUBLE_OUT(
+                OUT_INDUC_DURAT,
+                "Time taken to build the decision tree."
             );
             PARAM_STRING_OUT(
                 OUT_MODEL_FILE,
@@ -85,6 +101,11 @@ class MasterNode : public ANode
             _test_set_path = CLI::GetParam<std::string>(PARAM_TEST_SET);
             _attr_names =
                 CLI::GetParam<std::vector<std::string>>(PARAM_ATTRIBUTES);
+
+            // set algorithm parameters
+            _params.debug = CLI::HasParam(PARAM_OUTPUT_DEBUG);
+            _params.min_leaf_size =
+                CLI::GetParam<int>(PARAM_MINLEAFSIZE);
         }
 
         virtual void
@@ -95,7 +116,7 @@ class MasterNode : public ANode
             ddti::Logger << "Running";
             try {
                 Dataset<double> training_set = load_data(_train_set_path);
-                Classifier      classifier(train(training_set));
+                Classifier      classifier(std::move(train(training_set)));
                 double          acc;
 
                 // test predictive accuracy
@@ -111,6 +132,7 @@ class MasterNode : public ANode
 
                 // output variables
                 CLI::GetParam<double>(OUT_PREDICTIVE_ACC) = acc;
+                CLI::GetParam<double>(OUT_INDUC_DURAT) = _train_duration;
                 if (CLI::HasParam(OUT_MODEL_FILE))
                     output_model(classifier, training_set);
                 else
@@ -147,15 +169,20 @@ class MasterNode : public ANode
             return Dataset<double>(data, _labels_dim, _attr_names, &data_info);
         }
 
-        DecisionTree*
-        train(Dataset<double> const& dataset) const
+        std::unique_ptr<DecisionTree>
+        train(Dataset<double> const& dataset)
         {
-            DecisionTree*   dt_root;
-            InductionAlgo   induction_algorithm(_comm);
+            std::unique_ptr<DecisionTree>   dt_root;
+            utils::datetime::Timer          timer;
+            InductionAlgo                   induction_algorithm(_comm);
 
-            ddti::Logger << "Induction started"; // TODO log config
-            dt_root = induction_algorithm(dataset);
+            ddti::Logger << "Induction started with the following parameters: "
+                            + _params.to_string();
+            timer.start();
+            dt_root = std::move(induction_algorithm(dataset, _params));
+            timer.stop();
             ddti::Logger << "Induction complete";
+            _train_duration = timer.get<double>();
             return dt_root;
         }
 
@@ -164,16 +191,22 @@ class MasterNode : public ANode
         int                         _labels_dim;
         std::string                 _test_set_path;
         std::vector<std::string>    _attr_names;
+        double                      _train_duration;
+        typename
+        InductionAlgo::Parameters   _params;
 
         // Input parameter names
         static const char* PARAM_TRAINING_SET;
         static const char* PARAM_TEST_SET;
         static const char* PARAM_LABELS_DIMENSION;
         static const char* PARAM_ATTRIBUTES;
+        static const char* PARAM_OUTPUT_DEBUG;
+        static const char* PARAM_MINLEAFSIZE;
 
         // Output parameter names
         static const char* OUT_PREDICTIVE_ACC;
         static const char* OUT_MODEL_FILE;
+        static const char* OUT_INDUC_DURAT; // induction duration
 };
 
 // Input parameter names
@@ -185,12 +218,18 @@ template <typename T>
 const char* MasterNode<T>::PARAM_LABELS_DIMENSION   = "labels_column";
 template <typename T>
 const char* MasterNode<T>::PARAM_ATTRIBUTES         = "attributes";
+template <typename T>
+const char* MasterNode<T>::PARAM_OUTPUT_DEBUG       = "debug";
+template <typename T>
+const char* MasterNode<T>::PARAM_MINLEAFSIZE        = "min_leaf_size";
 
 // Output parameter names
 template <typename T>
-const char* MasterNode<T>::OUT_PREDICTIVE_ACC       = "predictive_accuracy";
-template <typename T>
 const char* MasterNode<T>::OUT_MODEL_FILE           = "model_file";
+template <typename T>
+const char* MasterNode<T>::OUT_PREDICTIVE_ACC       = "Predictive accuracy";
+template <typename T>
+const char* MasterNode<T>::OUT_INDUC_DURAT          = "Induction duration (s)";
 
 }   // end of namespace ddti
 

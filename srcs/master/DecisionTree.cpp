@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 18:23:20
-// Modified: 2017-08-23 17:13:50
+// Modified: 2017-08-23 21:55:22
 
 #include <iomanip>
 #include "DecisionTree.hpp"
@@ -16,38 +16,15 @@ DecisionTree::DecisionTree()
 {
 }
 
-DecisionTree::DecisionTree(unsigned int index, int split_value, size_t size,
+DecisionTree::DecisionTree(unsigned int index, int split_value, size_t nb_insts,
                            bool is_leaf, size_t misses)
-    : _is_leaf(is_leaf), _index(index), _size(size), _split_value(split_value),
-      _misses(misses)
+    : _is_leaf(is_leaf), _index(index), _nb_instances(nb_insts),
+      _split_value(split_value), _misses(misses)
 {
 }
 
 DecisionTree::~DecisionTree()
 {
-    for (auto& child: _children) {
-        delete child.second;
-    }
-}
-
-DecisionTree::DecisionTree(DecisionTree const& o)
-    : _is_leaf(o._is_leaf), _index(o._index), _size(o._size),
-      _split_value(o._split_value), _misses(o._misses), _children(o._children)
-{
-}
-
-DecisionTree&
-DecisionTree::operator=(DecisionTree const& o)
-{
-    if (this != &o) {
-        _is_leaf = o._is_leaf;
-        _size = o._size;
-        _split_value = o._split_value;
-        _index = o._index;
-        _misses = o._misses;
-        _children = o._children;
-    }
-    return *this;
 }
 
 bool
@@ -81,9 +58,9 @@ DecisionTree::split() const
 }
 
 size_t
-DecisionTree::size() const
+DecisionTree::nb_instances() const
 {
-    return _size;
+    return _nb_instances;
 }
 
 size_t
@@ -95,25 +72,25 @@ DecisionTree::misses() const
 DecisionTree*
 DecisionTree::child(size_t split) const
 {
-    return _children.at(split);
+    return _children.at(split).get();
 }
 
-std::map<size_t, DecisionTree*>::const_iterator
+DecisionTree::UniqueDtMap::const_iterator
 DecisionTree::begin() const
 {
     return _children.begin();
 }
 
-std::map<size_t, DecisionTree*>::const_iterator
+DecisionTree::UniqueDtMap::const_iterator
 DecisionTree::end() const
 {
     return _children.end();
 }
 
 void
-DecisionTree::add_child(DecisionTree* node)
+DecisionTree::add_child(std::unique_ptr<DecisionTree> node)
 {
-    _children[node->split()] = node;
+    _children[node->split()] = std::move(node);
 }
 
 // preorder print
@@ -122,7 +99,7 @@ DecisionTree::output_txt(Dataset<double> const& dataset,
                          std::ostream& os, unsigned int level) const
 {
     for (auto& pair: _children) {
-        DecisionTree*   child = pair.second;
+        DecisionTree*   child = pair.second.get();
         // indent
         for (unsigned int i = 0; i < level; ++i) {
             os << "|   ";
@@ -132,7 +109,7 @@ DecisionTree::output_txt(Dataset<double> const& dataset,
            << " = " << dataset.mapping(_index, child->_split_value);
         if (child->is_leaf()) {
             os << ": " << dataset.mapping(dataset.labelsdim(), child->label())
-               << " (" << child->_size << ".0";
+               << " (" << child->_nb_instances << ".0";
             if (child->_misses > 0)
                 os << "/" << child->_misses << ".0";
             os << ")";
