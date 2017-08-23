@@ -52,7 +52,8 @@ List of the currently distributed tasks:
 
 ## Deployment
 Make sure to install all the dependencies, then execute:
-```git clone https://github.com/alexandretea/ddti.git && mkdir ddti/build && cd ddti/build && cmake .. && make```
+
+```git      clone https://github.com/alexandretea/ddti.git && mkdir ddti/build && cd ddti/build && cmake .. && make```
 
 ## Dependencies
 - An MPI implementation
