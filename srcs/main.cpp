@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/main_load.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-25 11:11:44
-// Modified: 2017-08-17 17:18:31
+// Modified: 2017-08-22 23:16:09
 
 #include <iostream>
 #include <mlpack/core.hpp>
@@ -25,7 +25,10 @@ static const char* PARAM_ATTRIBUTES         = "attributes";
 // Program parameters
 PARAM_STRING_IN_REQ(PARAM_TRAINING_SET, "Path to the training dataset.", "i");
 // TODO specify allowed formats for datasets, in param help or program info
-PARAM_STRING_IN(PARAM_TEST_SET, "Test dataset file", "t", "");
+PARAM_STRING_IN(PARAM_TEST_SET,
+                "The dataset used to test the predictive accuracy of the "
+                "generated model. If none is provided, the training set will be"
+                "used.", "t", "");
 PARAM_INT_IN(PARAM_LABELS_DIMENSION,
              "Index of the column containing the labels to predict "
              "(must be between 0 and N-1). If unspecified, the algorithm will "

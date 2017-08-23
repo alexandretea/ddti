@@ -4,12 +4,12 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 17:49:15
-// Modified: 2017-08-19 17:46:50
+// Modified: 2017-08-23 01:12:25
 
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
 
-#include <vector>
+#include <map>
 #include "Dataset.hpp"
 
 namespace ddti {
@@ -34,13 +34,15 @@ class DecisionTree
         int             split() const;  // returns -1 if node is root
         size_t          size() const;
         size_t          misses() const;
+        DecisionTree*   child(size_t split) const;
 
         void            add_child(DecisionTree* node);
-        void            print(Dataset<double> const& mappings,
-                              unsigned int level = 0) const;
+        void            output_txt(Dataset<double> const& mappings,
+                                   std::ostream& os = std::cout,
+                                   unsigned int level = 0) const;
 
-        std::vector<DecisionTree*>::const_iterator  begin() const;
-        std::vector<DecisionTree*>::const_iterator  end() const;
+        std::map<size_t, DecisionTree*>::const_iterator  begin() const;
+        std::map<size_t, DecisionTree*>::const_iterator  end() const;
 
     protected:
         bool                        _is_leaf;
@@ -50,7 +52,7 @@ class DecisionTree
         int                         _split_value;   // -1 if node is the root
         size_t                      _misses;
         // number of instances that doesn't match leaf class
-        std::vector<DecisionTree*>  _children;
+        std::map<size_t, DecisionTree*> _children;
 };
 
 }

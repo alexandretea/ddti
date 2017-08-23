@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-27 18:23:20
-// Modified: 2017-08-19 17:59:07
+// Modified: 2017-08-23 01:12:58
 
 #include <iomanip>
 #include "DecisionTree.hpp"
@@ -26,7 +26,7 @@ DecisionTree::DecisionTree(unsigned int index, int split_value, size_t size,
 DecisionTree::~DecisionTree()
 {
     for (auto& child: _children) {
-        delete child;
+        delete child.second;
     }
 }
 
@@ -92,13 +92,19 @@ DecisionTree::misses() const
     return _misses;
 }
 
-std::vector<DecisionTree*>::const_iterator
+DecisionTree*
+DecisionTree::child(size_t split) const
+{
+    return _children.at(split);
+}
+
+std::map<size_t, DecisionTree*>::const_iterator
 DecisionTree::begin() const
 {
     return _children.begin();
 }
 
-std::vector<DecisionTree*>::const_iterator
+std::map<size_t, DecisionTree*>::const_iterator
 DecisionTree::end() const
 {
     return _children.end();
@@ -107,37 +113,36 @@ DecisionTree::end() const
 void
 DecisionTree::add_child(DecisionTree* node)
 {
-    _children.push_back(node);
+    _children[node->split()] = node;
 }
 
 // preorder print
 void
-DecisionTree::print(Dataset<double> const& dataset,
-                    unsigned int level) const
+DecisionTree::output_txt(Dataset<double> const& dataset,
+                         std::ostream& os, unsigned int level) const
 {
-    for (auto& child: _children) {
+    for (auto& pair: _children) {
+        DecisionTree*   child = pair.second;
         // indent
         for (unsigned int i = 0; i < level; ++i) {
-            std::cout << "|   ";
+            os << "|   ";
         }
-
         // print splits
-        std::cout << dataset.attribute_name(_index)
-                  << " = " << dataset.mapping(_index, child->_split_value);
+        os << dataset.attribute_name(_index)
+           << " = " << dataset.mapping(_index, child->_split_value);
         if (child->is_leaf()) {
-            std::cout << ": "
-                      << dataset.mapping(dataset.labelsdim(), child->label())
-                      << " (" << child->_size << ".0";
+            os << ": " << dataset.mapping(dataset.labelsdim(), child->label())
+               << " (" << child->_size << ".0";
             if (child->_misses > 0)
-                std::cout << "/" << child->_misses << ".0";
-            std::cout << ")";
+                os << "/" << child->_misses << ".0";
+            os << ")";
             // NOTE: the appending of ".0" after the integers is to keep the
             // same output style of Weka's J48
         }
-        std::cout << std::endl;
+        os << std::endl;
 
         // print childs
-        child->print(dataset, level + 1);
+        child->output_txt(dataset, os, level + 1);
     }
 }
 

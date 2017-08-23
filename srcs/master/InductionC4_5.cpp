@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-19 17:55:57
+// Modified: 2017-08-23 01:13:49
 
 #include <algorithm>
 #include <vector>
@@ -47,7 +47,6 @@ C4_5::operator()(Dataset<double> const& dataset, Parameters const& conf)
                                              dataset.n_cols() - 1),
                              attributes);
     send_task(task::End);
-    dt_root->print(dataset); // TODO remove debug
     // TODO end of induction? although pruning
     return dt_root;
 }

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Dataset.hpp
 // Purpose:  TODO (a one-line explanation)
 // Created:  2017-08-09 14:19:43
-// Modified: 2017-08-18 17:56:46
+// Modified: 2017-08-23 01:02:44
 
 #ifndef DATASET_H
 #define DATASET_H
@@ -44,15 +44,16 @@ class Dataset
             if (_attr_names.empty()) {
                 _attr_names.reserve(_matrix.n_rows);
                 for (unsigned int i = 0; i < _matrix.n_rows; ++i) {
-                    _attr_names.push_back("attr(" + std::to_string(i) + ")");
+                    _attr_names.push_back(std::to_string(i));
                 }
             }
         }
 
         Dataset(Dataset const& o)
-            : _matrix(o._matrix), _mappings(o._mappings),
-              _labels_dimension(o._labels_dimension),
-              _attr_names(o._attr_names) {}
+            : _matrix(o._matrix),
+              _attr_names(o._attr_names),
+              _mappings(o._mappings),
+              _labels_dimension(o._labels_dimension) {}
 
         Dataset&
         operator=(Dataset const& o)
@@ -77,6 +78,12 @@ class Dataset
         n_cols() const
         {
             return _matrix.n_cols;
+        }
+
+        size_t
+        size() const
+        {
+            return n_cols();
         }
 
         arma::subview<T>
