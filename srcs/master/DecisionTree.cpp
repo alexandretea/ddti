@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  DecisionTree implementation
 // Created:  2017-07-27 18:23:20
-// Modified: 2017-08-23 22:11:26
+// Modified: 2017-08-23 23:14:06
 
 #include <iomanip>
 #include "DecisionTree.hpp"

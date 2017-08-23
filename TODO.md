@@ -1,5 +1,6 @@
 # To do
 - index submission with html file and relative links
+- distribute entropy distribution
 - fix all todos
 - test other datasets
 - pruning?

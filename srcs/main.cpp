@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/main_load.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Runs a Master or Slave node
 // Created:  2017-07-25 11:11:44
-// Modified: 2017-08-23 22:31:32
+// Modified: 2017-08-23 23:20:59
 
 #include <iostream>
 #include <mlpack/core.hpp>

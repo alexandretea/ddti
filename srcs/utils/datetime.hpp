@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/datetime.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  datetime utilities
 // Created:  2017-07-29 22:50:21
-// Modified: 2017-08-23 19:17:02
+// Modified: 2017-08-23 23:19:06
 
 #ifndef DATETIME_H
 #define DATETIME_H

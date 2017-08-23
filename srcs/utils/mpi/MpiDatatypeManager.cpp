@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/mpi/MpiDatatypeManager.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Class that manages MPI datatypes
 // Created:  2017-08-05 00:07:16
-// Modified: 2017-08-06 01:13:25
+// Modified: 2017-08-23 23:18:25
 
 #include <mpi.h>
 #include "MpiDatatypeManager.hpp"

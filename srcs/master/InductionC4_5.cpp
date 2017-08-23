@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Induction algorithm based on Quinlan's C4.5
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-23 21:52:07
+// Modified: 2017-08-23 23:30:14
 
 #include <algorithm>
 #include <vector>
@@ -27,7 +27,7 @@ C4_5::~C4_5()
 }
 
 std::unique_ptr<DecisionTree>
-C4_5::operator()(Dataset<double> const& dataset, Parameters const& conf)
+C4_5::operator()(Dataset<double> const& dataset, Parameters conf)
 {
     std::vector<size_t>             attributes;
     std::unique_ptr<DecisionTree>   dt_root;
@@ -39,8 +39,8 @@ C4_5::operator()(Dataset<double> const& dataset, Parameters const& conf)
             attributes.push_back(i);
     }
 
-    _dataset = dataset; // TODO use std::move to avoid copy
-    _conf = conf;
+    _dataset = &dataset;
+    _conf = std::move(conf);
 
     dt_root = std::unique_ptr<DecisionTree>(
         rec_train_node(dataset.subview(0, 0, dataset.n_rows() - 1,
@@ -48,7 +48,6 @@ C4_5::operator()(Dataset<double> const& dataset, Parameters const& conf)
                        attributes)
     );
     send_task(task::End);
-    // TODO end of induction? although pruning
     return dt_root;
 }
 
@@ -70,12 +69,11 @@ C4_5::rec_train_node(arma::Mat<double> const& data,
 
     if (data.n_cols == 0)
         throw std::runtime_error("Not enough data");
-    entropy = C4_5::compute_entropy(data.row(_dataset.labelsdim()),
+    entropy = C4_5::compute_entropy(data.row(_dataset->labelsdim()),
                                     &maj_class, &is_only_class);
     if (is_only_class or attrs.empty()) {
         return create_leaf(maj_class, split_value, data.n_cols);
     }
-    // TODO bufferised scatter + bufferised load of matrix
 
     std::pair<size_t, double>   attr = select_attribute(data, attrs, entropy);
     if (attr.second < 0.05) {
@@ -90,7 +88,7 @@ C4_5::rec_train_node(arma::Mat<double> const& data,
     }
 
     debug("Split with attribute `"
-          + _dataset.attribute_name(attr.first) + "` ("
+          + _dataset->attribute_name(attr.first) + "` ("
           + std::to_string(data.n_cols) + ")");
 
     node = new DecisionTree(attr.first, split_value, data.n_cols);
@@ -111,7 +109,7 @@ C4_5::create_leaf(std::pair<size_t, size_t> const& label, int split_value,
                   size_t nb_instances) const
 {
     debug("Create leaf with class `"
-        + _dataset.mapping(_dataset.labelsdim(), label.first)
+        + _dataset->mapping(_dataset->labelsdim(), label.first)
         + "` (" + std::to_string(label.second) + ")");
     return new DecisionTree(label.first, split_value, nb_instances, true,
                             nb_instances - label.second);
@@ -147,8 +145,6 @@ C4_5::select_attribute(arma::Mat<double> const& data,
                        std::vector<size_t> const& attrs, double entropy)
 {
     std::map<size_t, ContTable> conts = count_contingencies(data);
-    // TODO refactor count_contingenceis to handle non-divisible scatter
-    // + data < nb node
     std::pair<size_t, double>   selected_attr = std::make_pair(0, 0);
     //        dim     info gain
 
@@ -193,7 +189,7 @@ C4_5::select_attribute(arma::Mat<double> const& data,
         info_gain_ratio = entropy - cond_e; // information gain
         if (split_e > 0)
             info_gain_ratio /= split_e;     // information gain ratio
-        debug("IGR(" + _dataset.attribute_name(dim) + ") = "
+        debug("IGR(" + _dataset->attribute_name(dim) + ") = "
               + std::to_string(info_gain_ratio));
         if (selected_attr.second < info_gain_ratio) {
             // keep track of largest information gain
@@ -204,11 +200,10 @@ C4_5::select_attribute(arma::Mat<double> const& data,
     return selected_attr;
 }
 
-// TODO refactor to only compute contingencies of given list of features/attrs
 std::map<size_t, ContTable>
 C4_5::count_contingencies(arma::Mat<double> const& data)
 {
-    static std::vector<size_t>  mapping_sizes = _dataset.mapping_sizes();
+    static std::vector<size_t>  mapping_sizes = _dataset->mapping_sizes();
 
     arma::mat                   to_process;
     std::map<size_t, ContTable> contingencies;
@@ -216,9 +211,9 @@ C4_5::count_contingencies(arma::Mat<double> const& data)
     send_task(task::C4_5::CountContingenciesCode);
 
     to_process = scatter_matrix<double>(data);
-    _comm.broadcast(_dataset.labelsdim());  // labels dimension
+    _comm.broadcast(_dataset->labelsdim());  // labels dimension
     _comm.bcast_vec(mapping_sizes);         // nb of values by dimension
-    _tasks.count_contingencies(to_process, _dataset.labelsdim(), mapping_sizes,
+    _tasks.count_contingencies(to_process, _dataset->labelsdim(), mapping_sizes,
                                &contingencies);
     return contingencies;
 }
@@ -227,7 +222,7 @@ C4_5::StdVecVec<C4_5::ull_t>
 C4_5::get_split_indices(arma::Mat<double> const& node_data,
                         size_t attr_split) const
 {
-    StdVecVec<ull_t> cols_by_vals(_dataset.mapping_size(attr_split));
+    StdVecVec<ull_t> cols_by_vals(_dataset->mapping_size(attr_split));
 
     // sort instances by value; each batch of instances will be given to a child
     // for training
@@ -250,7 +245,6 @@ C4_5::compute_entropy(arma::subview_row<double> const& dim,
                       std::pair<size_t, size_t>* majority_class,
                       bool* is_only_class)
 {
-    // TODO distribute data?
     std::map<size_t, size_t>    counts; // <class value, count>
     double                      entropy = 0.0;
 

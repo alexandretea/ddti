@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Node that will induct the decision tree and evaluate it
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-23 23:06:17
+// Modified: 2017-08-23 23:43:37
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -20,8 +20,6 @@
 
 namespace ddti {
 
-// TODO network terminal to give instructions to node? could be in ANode
-// so SlaveNode has it too; inherits from a TerminalCapabilities class?
 template <typename InductionAlgo>
 class MasterNode : public ANode
 {
@@ -42,14 +40,21 @@ class MasterNode : public ANode
             using namespace mlpack;
 
             // Input parameters
-            PARAM_STRING_IN_REQ(PARAM_TRAINING_SET,
-                                "Path to the training dataset.", "i");
-            // TODO specify allowed formats for datasets, in param help or program info
+            PARAM_STRING_IN_REQ(
+                PARAM_TRAINING_SET,
+                "Path to the training dataset. The accepted formats are "
+                "CSV (.csv or .txt), ASCII (.txt), Armadillo ASCII (.txt), "
+                "PGM (.pgm), PPM (.ppm), Raw binary (.bin), "
+                "Armadillo binary (.bin).",
+                "i");
             PARAM_STRING_IN(
                 PARAM_TEST_SET,
                 "The dataset used to test the predictive accuracy of the "
                 "generated model. If none is provided, the training set "
-                "will be used.",
+                "will be used. The accepted formats are "
+                "CSV (.csv or .txt), ASCII (.txt), Armadillo ASCII (.txt), "
+                "PGM (.pgm), PPM (.ppm), Raw binary (.bin), "
+                "Armadillo binary (.bin).",
                 "t", ""
             );
             PARAM_INT_IN(

@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/task.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Task utilities
 // Created:  2017-08-05 16:57:17
-// Modified: 2017-08-05 16:57:44
+// Modified: 2017-08-23 23:20:00
 
 #include "task.hpp"
 

@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/datetime.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  datetime utilities
 // Created:  2017-07-29 22:52:26
-// Modified: 2017-08-23 19:05:22
+// Modified: 2017-08-23 23:19:15
 
 #include <ctime>
 #include "datetime.hpp"

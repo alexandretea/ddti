@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Induction algorithm based on Quinlan's C4.5
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-23 21:47:57
+// Modified: 2017-08-23 23:32:52
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -22,7 +22,6 @@
 namespace ddti {
 namespace induction {
 
-// TODO needs to get parameters
 class C4_5
 {
     public:
@@ -56,7 +55,9 @@ class C4_5
     public:
         std::unique_ptr<DecisionTree>
         operator()(Dataset<double> const& dataset,
-                   Parameters const& conf = Parameters());
+                   Parameters conf = Parameters());
+        // NOTE: conf is not received as a constant reference because the param
+        // will be moved in a member variable
 
     protected:
         DecisionTree*   rec_train_node(arma::Mat<double> const& data,
@@ -98,7 +99,6 @@ class C4_5
             if (by_column) {    // armadillo matrices are column-major
                 nb_elems = data.n_rows;
                 chunk_size = data.n_cols / _comm.size();
-                // TODO check case odd number
                 entry_type = _mpi_types.matrix_contiguous_entry<T>(data.n_rows);
             } else {
                 nb_elems = data.n_cols;
@@ -126,8 +126,8 @@ class C4_5
         utils::mpi::datatype::Manager   _mpi_types;
 
         // only used during training:
-        Dataset<double>     _dataset;
-        Parameters          _conf;
+        Dataset<double> const*          _dataset;
+        Parameters                      _conf;
 };
 
 }   // end of namespace induction

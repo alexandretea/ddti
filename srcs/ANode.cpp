@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/DdtiANode.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Abstract class representing a node in ddti's distributed design
 // Created:  2017-07-26 19:00:51
-// Modified: 2017-08-17 20:24:38
+// Modified: 2017-08-23 23:10:34
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "ANode.hpp"

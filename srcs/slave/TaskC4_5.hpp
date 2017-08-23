@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Class that contains the logic of C4.5's tasks
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-18 13:39:27
+// Modified: 2017-08-23 23:16:42
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H

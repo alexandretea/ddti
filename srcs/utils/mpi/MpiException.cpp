@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/MpiException.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  MPI exception
 // Created:  2017-08-02 16:56:05
-// Modified: 2017-08-02 17:52:27
+// Modified: 2017-08-23 23:18:37
 
 #include <unordered_map>
 #include <mpi.h>

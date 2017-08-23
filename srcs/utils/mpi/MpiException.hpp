@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/MpiException.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  MPI exception
 // Created:  2017-08-02 16:54:27
-// Modified: 2017-08-02 17:00:30
+// Modified: 2017-08-23 23:18:43
 
 #ifndef MPIEXCEPTION_H
 #define MPIEXCEPTION_H

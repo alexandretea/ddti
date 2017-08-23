@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/log.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Templated logger
 // Created:  2017-07-30 15:42:02
-// Modified: 2017-08-06 16:04:44
+// Modified: 2017-08-23 23:19:29
 
 #ifndef LOG_H
 #define LOG_H

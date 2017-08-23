@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Dataset.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Class that represents a dataset
 // Created:  2017-08-09 14:19:43
-// Modified: 2017-08-23 01:02:44
+// Modified: 2017-08-23 23:13:21
 
 #ifndef DATASET_H
 #define DATASET_H

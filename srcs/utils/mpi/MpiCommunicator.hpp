@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/utils/MpiCommunicator.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Abstraction of an MPI communicator
 // Created:  2017-07-26 17:51:48
-// Modified: 2017-08-13 13:37:01
+// Modified: 2017-08-23 23:36:35
 
 #ifndef MPIPROCESS_H
 #define MPIPROCESS_H
@@ -26,7 +26,6 @@ class Communicator
 
         Communicator(Communicator const& other) = delete;
         Communicator&       operator=(Communicator const& other) = delete;
-        // TODO implement copy ctr and assign op?
 
     public:
         int                 rank() const;
@@ -100,7 +99,6 @@ class Communicator
         void
         broadcast(T* buffer, int count, int root) const
         { broadcast(buffer, datatype::get<T>(), count, root); }
-        // TODO templated scatter functions
 
         template <typename RecvType>
         RecvType*
@@ -146,7 +144,6 @@ class Communicator
         void    reduce(void const* sdata, int count, MPI_Datatype const& type,
                        MPI_Op const& op, void* rbuffer = nullptr,
                        int root = -1) const;
-        // TODO mpi error handler, abort vs returns
 
     protected:
         MPI_Comm    _comm;

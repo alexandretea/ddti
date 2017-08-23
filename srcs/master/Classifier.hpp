@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Classifier.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Classifier that uses a decision tree
 // Created:  2017-08-23 00:25:45
-// Modified: 2017-08-23 22:32:31
+// Modified: 2017-08-23 23:12:38
 
 #ifndef CLASSIFIER_H
 #define CLASSIFIER_H

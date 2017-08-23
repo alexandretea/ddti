@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/DdtiANode.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Abstract class representing a node in ddti's distributed design
 // Created:  2017-07-26 18:53:59
-// Modified: 2017-08-23 18:17:54
+// Modified: 2017-08-23 23:10:16
 
 #ifndef DDTIANODE_H
 #define DDTIANODE_H

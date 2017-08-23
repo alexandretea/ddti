@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Class that contains the logic of C4.5's tasks
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-18 16:54:17
+// Modified: 2017-08-23 23:35:50
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -101,7 +101,6 @@ C4_5::comp_condnsplit_entropies()
     comp_condnsplit_entropies(matrix, nb_instances);
 }
 
-// TODO refacto to compute cond entropy AND split entropy
 void
 C4_5::comp_condnsplit_entropies(ContTable const& matrix, size_t total_instances,
                                 double* out_cond_e, double* out_split_e) const

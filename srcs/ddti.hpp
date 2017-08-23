@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/ddti_log.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  ddti's variable definitions and typedefs
 // Created:  2017-07-30 16:43:19
-// Modified: 2017-08-23 18:07:23
+// Modified: 2017-08-23 23:12:04
 
 #ifndef DDTI_H
 #define DDTI_H

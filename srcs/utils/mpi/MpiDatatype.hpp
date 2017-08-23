@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/MpiDatatype.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Utility functions for MPI datatypes
 // Created:  2017-08-02 17:15:48
-// Modified: 2017-08-06 00:47:38
+// Modified: 2017-08-23 23:18:05
 
 #ifndef MPIDATATYPE_H
 #define MPIDATATYPE_H

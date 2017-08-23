@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/mpi/MpiDatatypeManager.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Class that manages MPI datatypes
 // Created:  2017-08-04 23:38:51
-// Modified: 2017-08-13 15:25:17
+// Modified: 2017-08-23 23:37:02
 
 #ifndef MPIDATATYPEMANAGER_H
 #define MPIDATATYPEMANAGER_H
@@ -14,7 +14,6 @@
 #include <mpi.h>
 #include "MpiException.hpp"
 #include "MpiDatatype.hpp"
-#include <iostream> // TODO remove debug
 
 namespace utils {
 namespace mpi {

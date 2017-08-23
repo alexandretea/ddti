@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/master/SlaveNode.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  Node that will execute the tasks sent by the MasterNode
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-23 22:52:21
+// Modified: 2017-08-23 23:35:34
 
 #ifndef SLAVENODE_H
 #define SLAVENODE_H
@@ -54,7 +54,7 @@ class SlaveNode : public ANode
             ddti::Logger << "Running with tasks: " + _task_manager.name();
             _comm.recv_broadcast(task_code, ANode::MasterRank);
             while (task_code != task::End) {
-                _task_manager(task_code);   // TODO handle tasks exceptions?
+                _task_manager(task_code);
                 _comm.recv_broadcast(task_code, ANode::MasterRank);
             }
             _comm.barrier();

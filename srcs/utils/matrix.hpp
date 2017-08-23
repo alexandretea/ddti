@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/matrix.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  matrix utilities
 // Created:  2017-08-14 16:44:51
-// Modified: 2017-08-14 16:52:25
+// Modified: 2017-08-23 23:19:40
 
 #ifndef MATRIX_H
 #define MATRIX_H

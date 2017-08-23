@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/utils/mpi/MpiDatatype.cpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  utility functions for MPI datatypes
 // Created:  2017-08-05 00:04:02
-// Modified: 2017-08-06 01:26:57
+// Modified: 2017-08-23 23:17:52
 
 #include <mpi.h>
 #include "MpiDatatype.hpp"

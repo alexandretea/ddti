@@ -2,9 +2,9 @@
 
 // Author:   Alexandre Tea <alexandre.qtea@gmail.com>
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.hpp
-// Purpose:  TODO (a one-line explanation)
+// Purpose:  DecisionTree is a class that represents a node/subtree of a DT
 // Created:  2017-07-27 17:49:15
-// Modified: 2017-08-23 22:10:46
+// Modified: 2017-08-23 23:14:33
 
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
