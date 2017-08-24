@@ -71,7 +71,7 @@ the standard output.
 ```
 
 ## Deployment
-Make sure to install all the dependencies, then execute:
+Make sure to install all the dependencies, then execute the following command:
 
 ```git clone https://github.com/alexandretea/ddti.git && mkdir ddti/build && cd ddti/build && cmake .. && make```
 
