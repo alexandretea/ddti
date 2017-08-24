@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Dataset.hpp
 // Purpose:  Class that represents a dataset
 // Created:  2017-08-09 14:19:43
-// Modified: 2017-08-23 23:13:21
+// Modified: 2017-08-24 01:23:54
 
 #ifndef DATASET_H
 #define DATASET_H
@@ -12,12 +12,13 @@
 #include <vector>
 #include <unordered_map>
 #include <mlpack/core.hpp>
+#include "ddti.hpp"
 
 namespace ddti {
 
 using DatasetMappings = std::vector<std::unordered_map<size_t, std::string>>;
 
-template <typename T = unsigned int>
+template <typename T>
 class Dataset
 {
     public:
@@ -254,6 +255,9 @@ class Dataset
         DatasetMappings             _mappings;
         size_t                      _labels_dimension;
 };
+
+// Categorical dataset
+using CatDataset = Dataset<uword>;
 
 }
 

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Classifier.cpp
 // Purpose:  Classifier that uses a decision tree
 // Created:  2017-08-23 00:33:01
-// Modified: 2017-08-23 23:12:53
+// Modified: 2017-08-24 01:24:55
 
 #include "Classifier.hpp"
 
@@ -19,13 +19,13 @@ Classifier::~Classifier()
 }
 
 double
-Classifier::test(Dataset<double> const& dataset) const
+Classifier::test(CatDataset const& dataset) const
 {
     size_t  nb_success = 0;
 
     // entries as columns
     dataset.matrix().each_col(
-        [this, &nb_success, &dataset](arma::Col<double> const& col) {
+        [this, &nb_success, &dataset](arma::ucolvec const& col) {
             if (classify(col) == col(dataset.labelsdim()))
                 ++nb_success;
         });
@@ -33,7 +33,7 @@ Classifier::test(Dataset<double> const& dataset) const
 }
 
 size_t
-Classifier::classify(arma::Col<double> const& instance) const
+Classifier::classify(arma::ucolvec const& instance) const
 {
     DecisionTree*   node = _root.get();
 

@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  Induction algorithm based on Quinlan's C4.5
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-23 23:30:14
+// Modified: 2017-08-24 01:28:00
 
 #include <algorithm>
 #include <vector>
@@ -27,7 +27,7 @@ C4_5::~C4_5()
 }
 
 std::unique_ptr<DecisionTree>
-C4_5::operator()(Dataset<double> const& dataset, Parameters conf)
+C4_5::operator()(CatDataset const& dataset, Parameters conf)
 {
     std::vector<size_t>             attributes;
     std::unique_ptr<DecisionTree>   dt_root;
@@ -58,7 +58,7 @@ C4_5::send_task(int task_code) const
 }
 
 DecisionTree*
-C4_5::rec_train_node(arma::Mat<double> const& data,
+C4_5::rec_train_node(arma::umat const& data,
                      std::vector<size_t> const& attrs,
                      int split_value)
 {
@@ -116,7 +116,7 @@ C4_5::create_leaf(std::pair<size_t, size_t> const& label, int split_value,
 }
 
 void
-C4_5::build_children(DecisionTree* node, arma::Mat<double> const& node_data,
+C4_5::build_children(DecisionTree* node, arma::umat const& node_data,
                      StdVecVec<ull_t> const& split_cols,
                      std::vector<size_t> const& node_attrs)
 {
@@ -141,7 +141,7 @@ C4_5::build_children(DecisionTree* node, arma::Mat<double> const& node_data,
 }
 
 std::pair<size_t, double>
-C4_5::select_attribute(arma::Mat<double> const& data,
+C4_5::select_attribute(arma::umat const& data,
                        std::vector<size_t> const& attrs, double entropy)
 {
     std::map<size_t, ContTable> conts = count_contingencies(data);
@@ -201,16 +201,16 @@ C4_5::select_attribute(arma::Mat<double> const& data,
 }
 
 std::map<size_t, ContTable>
-C4_5::count_contingencies(arma::Mat<double> const& data)
+C4_5::count_contingencies(arma::umat const& data)
 {
     static std::vector<size_t>  mapping_sizes = _dataset->mapping_sizes();
 
-    arma::mat                   to_process;
+    arma::umat                  to_process;
     std::map<size_t, ContTable> contingencies;
 
     send_task(task::C4_5::CountContingenciesCode);
 
-    to_process = scatter_matrix<double>(data);
+    to_process = scatter_matrix<uword>(data);
     _comm.broadcast(_dataset->labelsdim());  // labels dimension
     _comm.bcast_vec(mapping_sizes);         // nb of values by dimension
     _tasks.count_contingencies(to_process, _dataset->labelsdim(), mapping_sizes,
@@ -219,7 +219,7 @@ C4_5::count_contingencies(arma::Mat<double> const& data)
 }
 
 C4_5::StdVecVec<C4_5::ull_t>
-C4_5::get_split_indices(arma::Mat<double> const& node_data,
+C4_5::get_split_indices(arma::umat const& node_data,
                         size_t attr_split) const
 {
     StdVecVec<ull_t> cols_by_vals(_dataset->mapping_size(attr_split));
@@ -241,7 +241,7 @@ C4_5::debug(std::string const& s) const
 
 // static functions
 double
-C4_5::compute_entropy(arma::subview_row<double> const& dim,
+C4_5::compute_entropy(arma::subview_row<uword> const& dim,
                       std::pair<size_t, size_t>* majority_class,
                       bool* is_only_class)
 {

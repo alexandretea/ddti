@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  Node that will induct the decision tree and evaluate it
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-23 23:43:37
+// Modified: 2017-08-24 01:28:12
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -129,16 +129,16 @@ class MasterNode : public ANode
 
             ddti::Logger << "Running";
             try {
-                Dataset<double> training_set = load_data(_train_set_path);
-                Classifier      classifier(std::move(train(training_set)));
-                double          acc;
+                CatDataset	training_set = load_data(_train_set_path);
+                Classifier  classifier(std::move(train(training_set)));
+                double      acc;
 
                 // test predictive accuracy
                 if (_test_set_path.empty()) {
                     ddti::Logger << "Test model using training set";
                     acc = classifier.test(training_set);
                 } else {
-                    Dataset<double> test_set = load_data(_test_set_path);
+                    CatDataset test_set = load_data(_test_set_path);
 
                     ddti::Logger << "Test model using " + _test_set_path;
                     acc = classifier.test(test_set);
@@ -167,7 +167,7 @@ class MasterNode : public ANode
     protected:
         void
         output_model(Classifier const& classifier,
-                     Dataset<double> const& dataset) const
+                     CatDataset const& dataset) const
         {
             std::fstream    stream(
                 mlpack::CLI::GetParam<std::string>(OUT_MODEL_FILE).c_str(),
@@ -177,20 +177,20 @@ class MasterNode : public ANode
             classifier->output_txt(dataset, stream);
         }
 
-        Dataset<double>
+        CatDataset
         load_data(std::string const& path)
         {
             mlpack::data::DatasetInfo   data_info;
-            arma::mat                   data;
+            arma::umat                  data;
 
             mlpack::data::Load(path, data, data_info, true);
             if (_labels_dim == -1)  // labels dimension is not set
                 _labels_dim = data.n_rows - 1;
-            return Dataset<double>(data, _labels_dim, _attr_names, &data_info);
+            return CatDataset(data, _labels_dim, _attr_names, &data_info);
         }
 
         std::unique_ptr<DecisionTree>
-        train(Dataset<double> const& dataset)
+        train(CatDataset const& dataset)
         {
             std::unique_ptr<DecisionTree>   dt_root;
             utils::datetime::Timer          timer;

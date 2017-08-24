@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.cpp
 // Purpose:  DecisionTree implementation
 // Created:  2017-07-27 18:23:20
-// Modified: 2017-08-23 23:14:06
+// Modified: 2017-08-24 01:14:28
 
 #include <iomanip>
 #include "DecisionTree.hpp"
@@ -111,7 +111,7 @@ DecisionTree::add_child(std::unique_ptr<DecisionTree> node)
 
 // preorder print
 void
-DecisionTree::output_txt(Dataset<double> const& dataset,
+DecisionTree::output_txt(CatDataset const& dataset,
                          std::ostream& os, unsigned int level) const
 {
     for (auto& pair: _children) {

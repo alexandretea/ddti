@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/Classifier.hpp
 // Purpose:  Classifier that uses a decision tree
 // Created:  2017-08-23 00:25:45
-// Modified: 2017-08-23 23:12:38
+// Modified: 2017-08-24 01:25:06
 
 #ifndef CLASSIFIER_H
 #define CLASSIFIER_H
@@ -28,8 +28,8 @@ class Classifier
     public:
         DecisionTree*       operator->();
         DecisionTree const* operator->() const;
-        double              test(Dataset<double> const& dataset) const;
-        size_t              classify(arma::Col<double> const& instance) const;
+        double              test(CatDataset const& dataset) const;
+        size_t              classify(arma::ucolvec const& instance) const;
         // returns the predictive accuracy of the model
 
     private:

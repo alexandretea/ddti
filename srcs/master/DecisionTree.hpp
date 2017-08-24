@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/DecisionTree.hpp
 // Purpose:  DecisionTree is a class that represents a node/subtree of a DT
 // Created:  2017-07-27 17:49:15
-// Modified: 2017-08-23 23:14:33
+// Modified: 2017-08-24 01:14:34
 
 #ifndef DECISIONTREE_H
 #define DECISIONTREE_H
@@ -46,7 +46,7 @@ class DecisionTree
         // that using it will alter the performance of your code
 
         void            add_child(std::unique_ptr<DecisionTree> node);
-        void            output_txt(Dataset<double> const& dataset,
+        void            output_txt(CatDataset const& dataset,
                                    std::ostream& os = std::cout,
                                    unsigned int level = 0) const;
 

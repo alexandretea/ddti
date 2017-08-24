@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  Class that contains the logic of C4.5's tasks
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-23 23:35:50
+// Modified: 2017-08-24 01:29:07
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -48,10 +48,10 @@ void
 C4_5::count_contingencies()
 {
     size_t              labels_dimension;
-    arma::mat           matrix;
+    arma::umat          matrix;
     std::vector<size_t> dim_values;
 
-    matrix = recv_scatter_mat<double>();
+    matrix = recv_scatter_mat<uword>();
     _comm.recv_broadcast(labels_dimension, ANode::MasterRank);
 
     dim_values = _comm.recv_bcast_vec<size_t>(matrix.n_rows, ANode::MasterRank);
@@ -60,7 +60,7 @@ C4_5::count_contingencies()
 }
 
 void
-C4_5::count_contingencies(arma::mat const& data, size_t labels_dim,
+C4_5::count_contingencies(arma::umat const& data, size_t labels_dim,
                           std::vector<size_t> const& dim_values,
                           std::map<size_t, ContTable>* output) const
 {
@@ -131,7 +131,7 @@ C4_5::comp_matrix_entropies(ContTable const& matrix, size_t total_instances,
 
         if (total_row > 0) {
             cond_e += compute_weighted_entropy(row, total_row,
-                                                     total_instances);
+                                               total_instances);
             split_e += compute_split_entropy(total_row, total_instances);
         }
     });

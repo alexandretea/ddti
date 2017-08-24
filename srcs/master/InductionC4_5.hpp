@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  Induction algorithm based on Quinlan's C4.5
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-23 23:32:52
+// Modified: 2017-08-24 01:20:33
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -54,18 +54,18 @@ class C4_5
 
     public:
         std::unique_ptr<DecisionTree>
-        operator()(Dataset<double> const& dataset,
+        operator()(CatDataset const& dataset,
                    Parameters conf = Parameters());
         // NOTE: conf is not received as a constant reference because the param
         // will be moved in a member variable
 
     protected:
-        DecisionTree*   rec_train_node(arma::Mat<double> const& data,
+        DecisionTree*   rec_train_node(arma::umat const& data,
                                        std::vector<size_t> const& attrs,
                                        int split_value = -1);
         void            send_task(int task_code) const;
         void            build_children(DecisionTree* node,
-                                       arma::Mat<double> const& node_data,
+                                       arma::umat const& node_data,
                                        StdVecVec<ull_t> const& split_cols,
                                        std::vector<size_t> const& node_attrs);
         DecisionTree*   create_leaf(std::pair<size_t, size_t> const& label,
@@ -74,14 +74,14 @@ class C4_5
         void            debug(std::string const& s) const;
 
         std::pair<size_t, double>   select_attribute(
-            arma::Mat<double> const& data, std::vector<size_t> const& attrs,
+            arma::umat const& data, std::vector<size_t> const& attrs,
             double entropy
         );
         std::map<size_t, ContTable> count_contingencies(
-            arma::Mat<double> const& data
+            arma::umat const& data
         );
         StdVecVec<ull_t>            get_split_indices(
-            arma::Mat<double> const& data, size_t attr
+            arma::umat const& data, size_t attr
         ) const;
 
         // scatter matrix by column or by row
@@ -116,7 +116,7 @@ class C4_5
         }
 
         static double
-        compute_entropy(arma::subview_row<double> const& dim,
+        compute_entropy(arma::subview_row<uword> const& dim,
                         std::pair<size_t, size_t>* majority_class = nullptr,
                         bool* is_only_class = nullptr);
 
@@ -126,8 +126,8 @@ class C4_5
         utils::mpi::datatype::Manager   _mpi_types;
 
         // only used during training:
-        Dataset<double> const*          _dataset;
-        Parameters                      _conf;
+        CatDataset const*	_dataset;
+        Parameters          _conf;
 };
 
 }   // end of namespace induction

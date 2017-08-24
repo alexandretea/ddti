@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.hpp
 // Purpose:  Class that contains the logic of C4.5's tasks
 // Created:  2017-08-02 18:43:30
-// Modified: 2017-08-23 23:16:42
+// Modified: 2017-08-24 01:30:09
 
 #ifndef TASKC4_5_H
 #define TASKC4_5_H
@@ -40,8 +40,8 @@ class C4_5
         void        operator()(int task_code);
         std::string name() const;
 
-        void        count_contingencies(arma::mat const& data) const;
-        void        count_contingencies(arma::mat const& data, size_t labelsdim,
+        void        count_contingencies(arma::umat const& data) const;
+        void        count_contingencies(arma::umat const& data, size_t labelsdim,
                                         std::vector<size_t> const& dim_values,
                                         std::map<size_t, ContTable>* output
                                             = nullptr) const;
