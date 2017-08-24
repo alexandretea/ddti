@@ -2,13 +2,8 @@
 Train a model with a decision tree, then measures its predictive accuracy.
 Ddti does this in a distributed manner, using MPI. The master node will induct
 the decision tree, using slave nodes to execute tasks such as computing
-entropies. The algorithm used to build the decision tree is based on Quilan's
-C4.5.
-
-List of the currently distributed tasks:
-- Computation of contingency tables
-- Computation of conditional entropies
-- Computation of split entropies
+entropies. The algorithm building the decision tree is based on Quilan's
+C4.5. The algorithm only handles categorical attributes.
 
 Written in C++14.
 
@@ -16,7 +11,7 @@ Written in C++14.
 1. [Usage](#usage)
 2. [Deployment](#deployment)
 3. [Dependencies](#dependencies)
-4. [Architecture](#architecture)
+4. [Design](#design)
 5. [Future improvements](#future-improvements)
 
 ## Usage
@@ -88,10 +83,23 @@ Make sure to install all the dependencies, then execute:
 - MLpack (for Load(), CLI, and Logger)
 - CMake
 
-## Architecture
-TODO
+## Design
+The processor with the rank 0 hosts the MasterNode. All the other processors
+host a SlaveNode. The MasterNode distributes computations -to the slaves-
+to build the decision tree.
+
+List of the currently distributed tasks:
+- Computation of contingency tables (instance-based distribution)
+	* Instances are evenly scattered to every slaves
+	* A stream of contingency tables (one per attribute) is reduced using a sum function
+- Computation of conditional entropies and split entropies of an attribute
+	* The counts of each attribute values are scattered (so each row of a CT)
+	* The conditional entropies and split entropies are reduced using a sum function
+
+NOTE: The MasterNode also receives and executes tasks (collective operations).
 
 ## Future improvements
 - Bufferise the loading and scattering of matrices
 - The number of contingency table computations can be reduced (specify list of attributes)
 - The entropy computation of the label dimension should be distributed
+- Shadow master nodes to improve reliability?

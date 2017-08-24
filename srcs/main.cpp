@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/main_load.cpp
 // Purpose:  Runs a Master or Slave node
 // Created:  2017-07-25 11:11:44
-// Modified: 2017-08-23 23:20:59
+// Modified: 2017-08-24 01:03:00
 
 #include <iostream>
 #include <mlpack/core.hpp>
@@ -21,7 +21,8 @@ PROGRAM_INFO(
     "accuracy. Ddti does this in a distributed manner, using MPI. "
     "The master node will induct the decision tree, using slave nodes "
     "to execute tasks such as computing entropies.\n"
-    "The algorithm used to build the decision tree is based on Quilan's C4.5."
+    "The algorithm building the decision tree is based on Quilan's C4.5. "
+	"The algorithm only handles categorical attributes."
 );
 
 int
