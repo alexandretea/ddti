@@ -4,6 +4,8 @@ Ddti does this in a distributed manner, using MPI. The master node will induct
 the decision tree, using slave nodes to execute tasks such as computing
 entropies. The algorithm building the decision tree is based on Quilan's
 C4.5. The algorithm only handles categorical attributes.
+The algorithm only handles categorical attributes. The provided datasets
+should not contain headers.
 
 Written in C++14.
 

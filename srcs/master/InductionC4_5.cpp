@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.cpp
 // Purpose:  Induction algorithm based on Quinlan's C4.5
 // Created:  2017-07-28 16:17:42
-// Modified: 2017-08-24 01:28:00
+// Modified: 2017-08-24 03:36:39
 
 #include <algorithm>
 #include <vector>
@@ -62,7 +62,7 @@ C4_5::rec_train_node(arma::umat const& data,
                      std::vector<size_t> const& attrs,
                      int split_value)
 {
-    double                      entropy;
+    long double                 entropy;
     std::pair<size_t, size_t>   maj_class; // <class, count>
     bool                        is_only_class;
     DecisionTree*               node;
@@ -75,7 +75,8 @@ C4_5::rec_train_node(arma::umat const& data,
         return create_leaf(maj_class, split_value, data.n_cols);
     }
 
-    std::pair<size_t, double>   attr = select_attribute(data, attrs, entropy);
+    std::pair<size_t, long double>  attr = select_attribute(data, attrs,
+                                                            entropy);
     if (attr.second < 0.05) {
         // base case: no information gain
         return create_leaf(maj_class, split_value, data.n_cols);
@@ -99,9 +100,17 @@ C4_5::rec_train_node(arma::umat const& data,
 bool
 C4_5::check_leaf_size(StdVecVec<ull_t> const& split_cols) const
 {
-    return std::min_element(split_cols.begin(), split_cols.end(),
-            [](auto& a, auto& b) { return a.size() < b.size(); })
-            ->size() >= _conf.min_leaf_size;  // check minimum leaf size
+    unsigned int cnt = 0;
+
+    for (auto& vec: split_cols) {
+        if (vec.size() >= _conf.min_leaf_size)
+            ++cnt;
+        if (cnt >= 2)
+            return true;
+    }
+    return false;
+    // Splits if at least two of the branches satifies the min leaf size
+    // https://stackoverflow.com/questions/21762161/what-does-the-minnumobj-parameter-do-in-j48-classifier-weka
 }
 
 DecisionTree*
@@ -140,21 +149,21 @@ C4_5::build_children(DecisionTree* node, arma::umat const& node_data,
     }
 }
 
-std::pair<size_t, double>
+std::pair<size_t, long double>
 C4_5::select_attribute(arma::umat const& data,
-                       std::vector<size_t> const& attrs, double entropy)
+                       std::vector<size_t> const& attrs, long double entropy)
 {
-    std::map<size_t, ContTable> conts = count_contingencies(data);
-    std::pair<size_t, double>   selected_attr = std::make_pair(0, 0);
+    std::map<size_t, ContTable>     conts = count_contingencies(data);
+    std::pair<size_t, long double>  selected_attr = std::make_pair(0, 0);
     //        dim     info gain
 
     // compute information gain ratio
     for (auto& dim: attrs) {
-        double  info_gain_ratio;
-        double  cond_e = 0;
-        double  split_e = 0;
-        size_t  remainings = 0;
-        size_t  nb_instances = arma::accu(conts[dim]);
+        long double info_gain_ratio;
+        long double cond_e = 0;
+        long double split_e = 0;
+        size_t      remainings = 0;
+        size_t      nb_instances = arma::accu(conts[dim]);
 
         // compute conditional entropy of dimension dim
         if (conts[dim].n_rows >= static_cast<size_t>(_comm.size())) {
@@ -187,6 +196,8 @@ C4_5::select_attribute(arma::umat const& data,
                                          cond_e, split_e);
         }
         info_gain_ratio = entropy - cond_e; // information gain
+        if (info_gain_ratio < 0)
+            info_gain_ratio = 0;
         if (split_e > 0)
             info_gain_ratio /= split_e;     // information gain ratio
         debug("IGR(" + _dataset->attribute_name(dim) + ") = "
@@ -212,7 +223,7 @@ C4_5::count_contingencies(arma::umat const& data)
 
     to_process = scatter_matrix<uword>(data);
     _comm.broadcast(_dataset->labelsdim());  // labels dimension
-    _comm.bcast_vec(mapping_sizes);         // nb of values by dimension
+    _comm.bcast_vec(mapping_sizes);          // nb of values by dimension
     _tasks.count_contingencies(to_process, _dataset->labelsdim(), mapping_sizes,
                                &contingencies);
     return contingencies;
@@ -240,19 +251,19 @@ C4_5::debug(std::string const& s) const
 }
 
 // static functions
-double
+long double
 C4_5::compute_entropy(arma::subview_row<uword> const& dim,
                       std::pair<size_t, size_t>* majority_class,
                       bool* is_only_class)
 {
     std::map<size_t, size_t>    counts; // <class value, count>
-    double                      entropy = 0.0;
+    long double                 entropy = 0.0;
 
     if (dim.n_elem == 0)
         throw std::runtime_error("Empty input");
 
     // loop and count
-    dim.for_each([&counts](double label) {
+    dim.for_each([&counts](uword label) {
         if (counts.find(label) == counts.end())
             counts[label] = 1;
         else
@@ -273,7 +284,8 @@ C4_5::compute_entropy(arma::subview_row<uword> const& dim,
 
     // compute entropy
     for (auto& label_cnt: counts) {
-        double prob = static_cast<double>(label_cnt.second) / dim.n_elem;
+        long double prob = static_cast<long double>(label_cnt.second)
+                            / dim.n_elem;
 
         if (prob != 0)
             entropy += prob * std::log2(prob);

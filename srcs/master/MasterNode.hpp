@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/MasterNode.hpp
 // Purpose:  Node that will induct the decision tree and evaluate it
 // Created:  2017-07-26 18:51:03
-// Modified: 2017-08-24 01:28:12
+// Modified: 2017-08-24 01:41:13
 
 #ifndef MASTERNODE_H
 #define MASTERNODE_H
@@ -130,6 +130,7 @@ class MasterNode : public ANode
             ddti::Logger << "Running";
             try {
                 CatDataset	training_set = load_data(_train_set_path);
+				log_mappings(training_set);
                 Classifier  classifier(std::move(train(training_set)));
                 double      acc;
 
@@ -177,12 +178,22 @@ class MasterNode : public ANode
             classifier->output_txt(dataset, stream);
         }
 
+		void
+		log_mappings(CatDataset const& dataset)
+		{
+			std::stringstream	ss;
+
+			dataset.debug_mappings(ss);
+			ddti::Logger << "Dataset mappings:\n" + ss.str();
+		}
+
         CatDataset
         load_data(std::string const& path)
         {
             mlpack::data::DatasetInfo   data_info;
             arma::umat                  data;
 
+			ddti::Logger << "Loading dataset: " + path;
             mlpack::data::Load(path, data, data_info, true);
             if (_labels_dim == -1)  // labels dimension is not set
                 _labels_dim = data.n_rows - 1;

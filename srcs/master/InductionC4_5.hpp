@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  Induction algorithm based on Quinlan's C4.5
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-24 01:20:33
+// Modified: 2017-08-24 02:34:45
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -73,9 +73,9 @@ class C4_5
         bool            check_leaf_size(StdVecVec<ull_t> const& cols) const;
         void            debug(std::string const& s) const;
 
-        std::pair<size_t, double>   select_attribute(
+        std::pair<size_t, long double>   select_attribute(
             arma::umat const& data, std::vector<size_t> const& attrs,
-            double entropy
+            long double entropy
         );
         std::map<size_t, ContTable> count_contingencies(
             arma::umat const& data
@@ -115,7 +115,7 @@ class C4_5
                                                    chunk_size, by_column);
         }
 
-        static double
+        static long double
         compute_entropy(arma::subview_row<uword> const& dim,
                         std::pair<size_t, size_t>* majority_class = nullptr,
                         bool* is_only_class = nullptr);

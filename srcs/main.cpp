@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/decision-tree-distributed-learning/srcs/main_load.cpp
 // Purpose:  Runs a Master or Slave node
 // Created:  2017-07-25 11:11:44
-// Modified: 2017-08-24 01:03:00
+// Modified: 2017-08-24 01:47:55
 
 #include <iostream>
 #include <mlpack/core.hpp>
@@ -22,7 +22,8 @@ PROGRAM_INFO(
     "The master node will induct the decision tree, using slave nodes "
     "to execute tasks such as computing entropies.\n"
     "The algorithm building the decision tree is based on Quilan's C4.5. "
-	"The algorithm only handles categorical attributes."
+	"The algorithm only handles categorical attributes. The provided datasets "
+    "should not contain headers."
 );
 
 int

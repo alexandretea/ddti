@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/slave/TaskC4_5.cpp
 // Purpose:  Class that contains the logic of C4.5's tasks
 // Created:  2017-08-02 18:45:34
-// Modified: 2017-08-24 01:29:07
+// Modified: 2017-08-24 02:45:48
 
 #include <mlpack/core.hpp>
 #include "TaskC4_5.hpp"
@@ -103,13 +103,14 @@ C4_5::comp_condnsplit_entropies()
 
 void
 C4_5::comp_condnsplit_entropies(ContTable const& matrix, size_t total_instances,
-                                double* out_cond_e, double* out_split_e) const
+                                long double* out_cond_e,
+                                long double* out_split_e) const
 {
-    double  entropies[2];   // 0: conditional entropy, 1: split entropy
-    double* reduced_ent;
+    long double  entropies[2] = { 0, 0 };
+    // 0: conditional entropy, 1: split entropy
+    long double* reduced_ent;
 
     comp_matrix_entropies(matrix, total_instances, entropies[0], entropies[1]);
-
     reduced_ent = _comm.reduce(entropies, 2, MPI_SUM, ANode::MasterRank);
     if (out_cond_e != nullptr and out_split_e != nullptr
         and reduced_ent != nullptr) {
@@ -124,7 +125,7 @@ C4_5::comp_condnsplit_entropies(ContTable const& matrix, size_t total_instances,
 
 void
 C4_5::comp_matrix_entropies(ContTable const& matrix, size_t total_instances,
-                            double& cond_e, double& split_e) const
+                            long double& cond_e, long double& split_e) const
 {
     matrix.each_row([this, &cond_e, &split_e, total_instances](auto& row) {
         unsigned int    total_row = arma::accu(row);
@@ -138,34 +139,35 @@ C4_5::comp_matrix_entropies(ContTable const& matrix, size_t total_instances,
 }
 
 // weighted entropy of a row
-double
+long double
 C4_5::compute_weighted_entropy(arma::Row<unsigned int> const& row,
                                unsigned int total_row,
                                size_t total_instances) const
 {
-    double          w_entropy = 0;
+    long double w_entropy = 0;
 
     if (total_row == 0)
         return 0;
     for (unsigned int v: row) {
-        double prob = (static_cast<double>(v) / total_row);
+        long double prob = (static_cast<long double>(v) / total_row);
 
         if (prob != 0)
             w_entropy += (prob * std::log2(prob));
     }
     w_entropy *= -1;
-    w_entropy *= static_cast<double>(total_row) / total_instances;
+    w_entropy *= static_cast<long double>(total_row) / total_instances;
     return w_entropy;
 }
 
-double
+long double
 C4_5::compute_split_entropy(unsigned int total_row,
                             size_t total_instances) const
 {
-    double          split_e = 0;
+    long double split_e = 0;
 
     if (total_row == 0
-        or (split_e = static_cast<double>(total_row) / total_instances) == 0)
+        or (split_e =
+            static_cast<long double>(total_row) / total_instances) == 0)
         return 0;
     return split_e * std::log2(split_e) * -1;
 }
