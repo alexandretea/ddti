@@ -4,7 +4,7 @@
 // File:     /Users/alexandretea/Work/ddti/srcs/master/InductionC4_5.hpp
 // Purpose:  Induction algorithm based on Quinlan's C4.5
 // Created:  2017-07-28 16:14:44
-// Modified: 2017-08-24 02:34:45
+// Modified: 2017-09-10 11:47:05
 
 #ifndef INDUCTIONC4_5_H
 #define INDUCTIONC4_5_H
@@ -13,7 +13,7 @@
 #include <armadillo>
 #include "MasterNode.hpp"
 #include "DecisionTree.hpp"
-#include "MPIDatatypeManager.hpp"
+#include "MpiDatatypeManager.hpp"
 #include "TaskC4_5.hpp"
 #include "Dataset.hpp"
 #include "ddti.hpp"
